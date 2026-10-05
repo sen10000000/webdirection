@@ -1,0 +1,1850 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webディレクション 一問一答学習アプリ</title>
+    <style>
+        :root {
+            /* 洗練されたオレンジ＆ブラックテーマ */
+            --brand: #F5A623;         /* アクセントのオレンジ */
+            --brand-light: #FFF8EE;   /* オレンジ背景用 */
+            --primary: #111827;       /* 深みのある黒 */
+            --primary-hover: #1F2937; /* ホバー時の黒 */
+            --bg: #F8FAFC;            /* 全体背景（洗練されたライトグレー） */
+            --card-bg: #FFFFFF;      /* カード背景（白） */
+            --text: #1E293B;          /* 視認性の良いダークグレー */
+            --text-muted: #64748B;    /* サブテキスト */
+            --correct: #10B981;       /* エメラルドグリーン */
+            --incorrect: #EF4444;     /* レッド */
+            --border: #E2E8F0;        /* ボーダーカラー */
+            --star: #F5A623;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Yu Gothic', '游ゴシック', YuGothic, 'Yu Gothic Medium', 'Hiragino Kaku Gothic ProN', sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text); 
+            line-height: 1.6; 
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background-color: var(--bg);
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        /* ヘッダーデザイン */
+        .stripe-header {
+            background-color: var(--brand);
+            padding: 32px 20px 24px;
+            text-align: center;
+            border-bottom: 4px solid var(--primary);
+            position: relative;
+        }
+        /* 斜めストライプ（幅を短く調整） */
+        .stripe-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 8px; /* 短く調整 */
+            background: repeating-linear-gradient(
+                -45deg,
+                #ffffff,
+                #ffffff 5px,
+                var(--brand) 5px,
+                var(--brand) 10px
+            );
+        }
+        .header-subtitle {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            display: inline-block;
+            padding-bottom: 2px;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+        h1 { 
+            font-size: 1.8rem; 
+            color: var(--primary); 
+            font-weight: 900; 
+            line-height: 1.25;
+            letter-spacing: 1.5px;
+        }
+
+        /* カードデザイン */
+        .card { 
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            padding: 24px; 
+            box-shadow: 0 4px 20px -2px rgba(17, 24, 39, 0.06); 
+            margin: 16px; 
+            flex-grow: 1; 
+            border: 1px solid var(--border); 
+        }
+        
+        /* 括弧（ブラケット）風タイトル */
+        .bracket-title {
+            position: relative;
+            display: inline-block;
+            padding: 4px 14px;
+            font-weight: 900;
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        .bracket-title::before, .bracket-title::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border: 3px solid var(--primary);
+        }
+        .bracket-title::before {
+            top: 0; left: 0;
+            border-right: none; border-bottom: none;
+        }
+        .bracket-title::after {
+            bottom: 0; right: 0;
+            border-left: none; border-top: none;
+        }
+
+        /* ボタンデザイン */
+        .btn { 
+            display: block; 
+            width: 100%; 
+            padding: 13px 16px; 
+            margin: 10px 0; 
+            border: 2px solid transparent; 
+            border-radius: 8px; 
+            font-size: 0.95rem; 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            font-weight: 700; 
+            text-align: center; 
+            font-family: inherit;
+        }
+        
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        
+        .btn-outline { background: transparent; border-color: var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: var(--primary); color: #fff; }
+        
+        .btn-option { background: var(--bg); border-color: var(--border); color: var(--text); text-align: left; font-weight: 500; }
+        .btn-option:hover { background: #F1F5F9; border-color: var(--primary); }
+        
+        .btn-danger { background: #FEF2F2; border-color: #FCA5A5; color: var(--incorrect); }
+        .btn-danger:hover { background: var(--incorrect); color: #fff; }
+        
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        .btn-back { 
+            background: none; 
+            border: none; 
+            color: var(--primary); 
+            cursor: pointer; 
+            font-size: 0.9rem; 
+            font-weight: 700; 
+            padding: 0; 
+            font-family: inherit;
+        }
+        .btn-back:hover { text-decoration: underline; }
+
+        .hidden { display: none !important; }
+        
+        /* メニュー領域 */
+        .mode-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px dashed var(--border); }
+        .mode-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .mode-title { font-size: 1.05rem; margin-bottom: 12px; font-weight: 700; color: var(--primary); }
+        .chapter-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        .checkbox-label { display: flex; align-items: center; background: #fff; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; font-weight: 700; font-size: 0.9rem; }
+        .checkbox-label:hover { border-color: var(--primary); }
+        .checkbox-label input { margin-right: 8px; accent-color: var(--brand); width: 16px; height: 16px; }
+
+        /* クイズ領域 */
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 0.85rem; color: var(--text-muted); font-weight: 700; }
+        .quiz-header-right { display: flex; align-items: center; gap: 8px; }
+        .badge-correct { background: #ECFDF5; color: var(--correct); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; border: 1px solid #A7F3D0; }
+        .badge-wrong { background: #FEF2F2; color: var(--incorrect); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; border: 1px solid #FECACA; }
+        .question-text { font-size: 1.05rem; margin-bottom: 20px; font-weight: 700; border-left: 4px solid var(--brand); padding-left: 12px; line-height: 1.5; }
+        
+        .btn-bookmark { background: none; border: none; font-size: 1.6rem; cursor: pointer; color: #CBD5E1; transition: transform 0.2s, color 0.2s; padding: 0 4px; line-height: 1; }
+        .btn-bookmark.active { color: var(--star); }
+        .btn-bookmark:hover { transform: scale(1.15); }
+
+        /* リスト・集計デザイン */
+        .list-item { 
+            padding: 14px; 
+            margin-bottom: 10px; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            cursor: pointer; 
+            background: #fff; 
+            transition: all 0.2s; 
+            text-align: left; 
+            display: block; 
+            width: 100%; 
+            font-family: inherit;
+        }
+        .list-item:hover { border-color: var(--primary); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
+        .bar-wrap { background: #E2E8F0; border-radius: 6px; height: 10px; margin-top: 6px; overflow: hidden; }
+        .bar-fill { height: 100%; transition: width 0.5s ease-out; }
+
+        /* 復習リストのはみ出し修正（レイアウト調整） */
+        .review-item-container { 
+            display: flex; 
+            gap: 8px; 
+            margin-bottom: 10px; 
+            align-items: stretch; 
+            width: 100%;
+        }
+        .review-item-container .list-item { 
+            margin-bottom: 0; 
+            flex: 1; 
+            min-width: 0;
+        }
+        .btn-item-reset { 
+            background: #fff; 
+            border: 1px solid var(--border); 
+            color: var(--text-muted); 
+            border-radius: 8px; 
+            padding: 0 12px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            white-space: nowrap; 
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: inherit;
+        }
+        .btn-item-reset:hover { background: #FEF2F2; border-color: #FCA5A5; color: var(--incorrect); }
+
+        /* 目次ナビゲーション */
+        .list-nav-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; padding: 10px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); }
+        .btn-list-nav { padding: 5px 10px; border: 1px solid var(--border); background: #fff; color: var(--primary); border-radius: 14px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+        .btn-list-nav:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+        /* 回答結果・解説 */
+        .feedback { margin-top: 20px; padding: 18px; border-radius: 8px; animation: fadeIn 0.25s ease-in; }
+        .feedback.correct { background: #ECFDF5; border: 2px solid var(--correct); }
+        .feedback.incorrect { background: #FEF2F2; border: 2px solid var(--incorrect); }
+        .feedback-title { font-size: 1.2rem; font-weight: 900; margin-bottom: 8px; }
+        .feedback.correct .feedback-title { color: var(--correct); }
+        .feedback.incorrect .feedback-title { color: var(--incorrect); }
+        .explanation { margin-top: 10px; color: #334155; font-size: 0.9rem; white-space: pre-wrap; background: #fff; padding: 14px; border: 1px solid var(--border); border-radius: 6px; line-height: 1.6; }
+        
+        /* メモ機能 */
+        .memo-container { margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border); }
+        .memo-title { font-weight: 700; font-size: 0.85rem; color: var(--primary); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .memo-textarea { 
+            width: 100%; 
+            min-height: 60px; 
+            padding: 10px; 
+            border: 1px solid var(--border); 
+            border-radius: 6px; 
+            font-family: inherit; 
+            font-size: 0.9rem; 
+            line-height: 1.5;
+            resize: none; 
+            overflow-y: hidden; 
+            outline: none; 
+            transition: border-color 0.2s; 
+        }
+        .memo-textarea:focus { border-color: var(--brand); }
+        .memo-status { font-size: 0.75rem; color: var(--correct); display: none; background: #DCFCE7; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+
+        .score-display { text-align: center; font-size: 2.2rem; font-weight: 900; color: var(--primary); margin: 20px 0; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="stripe-header">
+            <div class="header-subtitle">一問一答学習アプリ</div>
+            <h1>Webディレクション<br>問題集</h1>
+        </header>
+
+        <div id="menu-view" class="card">
+            <div class="mode-section">
+                <div class="mode-title">📖 章別学習モード</div>
+                <div class="chapter-grid">
+                    <label class="checkbox-label"><input type="checkbox" value="1" class="chap-check" checked> 第1章</label>
+                    <label class="checkbox-label"><input type="checkbox" value="2" class="chap-check"> 第2章</label>
+                    <label class="checkbox-label"><input type="checkbox" value="3" class="chap-check"> 第3章</label>
+                    <label class="checkbox-label"><input type="checkbox" value="4" class="chap-check"> 第4章</label>
+                    <label class="checkbox-label"><input type="checkbox" value="5" class="chap-check"> 第5章</label>
+                    <label class="checkbox-label"><input type="checkbox" value="6" class="chap-check"> 第6章</label>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="startChapterMode()">選択した章を学習する</button>
+            </div>
+
+            <div class="mode-section">
+                <div class="mode-title">📋 問題一覧モード</div>
+                <button type="button" class="btn btn-outline" onclick="showQuestionList()">問題一覧から選んで学習する</button>
+            </div>
+
+            <div class="mode-section">
+                <div class="mode-title">📊 苦手分析レポート</div>
+                <button type="button" class="btn btn-outline" onclick="showAnalysis()">学習データから苦手を分析する</button>
+            </div>
+
+            <div class="mode-section">
+                <div class="mode-title">🔄 復習・マーク一覧</div>
+                <p style="font-size: 0.85rem; margin-bottom: 10px; font-weight: 700;">
+                    間違えた問題: <span id="mistake-count" style="color: var(--incorrect);">0</span>問<br>
+                    ★マークした問題: <span id="bookmark-count" style="color: var(--brand);">0</span>問
+                </p>
+                <button type="button" id="btn-review" class="btn btn-danger" onclick="showReviewList()">間違えた問題・マークした問題を見る</button>
+            </div>
+
+            <div class="mode-section">
+                <div class="mode-title">⚙️️ 設定</div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">これまでの正解・間違いの記録、マーク、保存したメモをすべて消去します。</p>
+                <button type="button" class="btn btn-outline" style="border-color: var(--incorrect); color: var(--incorrect);" onclick="resetAllData()">学習データをリセットする</button>
+            </div>
+        </div>
+
+        <!-- 苦手分析レポート画面 -->
+        <div id="analysis-view" class="card hidden">
+            <div class="quiz-header">
+                <button type="button" class="btn-back" onclick="returnToMenuFrom(event, 'analysis-view')">← トップメニューに戻る</button>
+            </div>
+            <div class="bracket-title">苦手分析レポート</div>
+            <div id="analysis-content"></div>
+        </div>
+
+        <!-- 問題一覧画面 -->
+        <div id="list-view" class="card hidden">
+            <div class="quiz-header">
+                <button type="button" class="btn-back" onclick="returnToMenuFrom(event, 'list-view')">← トップメニューに戻る</button>
+            </div>
+            <div class="bracket-title">問題一覧</div>
+            <div id="list-nav-container" class="list-nav-container"></div>
+            <div id="question-list-container"></div>
+        </div>
+
+        <!-- 復習・マーク一覧画面 -->
+        <div id="review-list-view" class="card hidden">
+            <div class="quiz-header">
+                <button type="button" class="btn-back" onclick="returnToMenuFrom(event, 'review-list-view')">← トップメニューに戻る</button>
+            </div>
+            <div class="bracket-title">復習・マーク一覧</div>
+            <div id="review-list-container"></div>
+        </div>
+
+        <!-- クイズ画面 -->
+        <div id="quiz-view" class="card hidden">
+            <div class="quiz-header">
+                <button type="button" id="btn-back-header" class="btn-back" onclick="returnToMenuFromQuiz(event)">← 中断して戻る</button>
+                <div class="quiz-header-right">
+                    <button type="button" id="btn-bookmark" class="btn-bookmark" onclick="toggleBookmarkCurrent()">☆</button>
+                    <span id="chapter-qnum-text" style="font-weight:700; color:var(--primary); margin-right:4px; margin-left:6px;"></span>
+                    <span id="progress-text" style="background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 12px; font-size:0.75rem;">1 / 10</span>
+                </div>
+            </div>
+            <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+                <span id="stats-badge-correct" class="badge-correct">正解: 0回</span>
+                <span id="stats-badge-wrong" class="badge-wrong">間違い: 0回</span>
+            </div>
+            <div id="question-text" class="question-text"></div>
+            
+            <!-- 画像表示コンテナ -->
+            <div id="question-image-container" class="hidden" style="margin-bottom: 20px; text-align: center;">
+                <img id="question-image" src="" alt="問題の図" style="max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 6px;">
+            </div>
+
+            <div id="options-container"></div>
+
+            <div id="feedback-container" class="feedback hidden">
+                <div id="feedback-title" class="feedback-title"></div>
+                <div style="font-weight: 700; margin-bottom: 8px; font-size:0.95rem;">正解: <span id="correct-answer-text"></span></div>
+                <div id="explanation-text" class="explanation"></div>
+                
+                <div class="memo-container">
+                    <div class="memo-title">
+                        <span>📝 自分専用メモ</span>
+                        <span id="memo-status" class="memo-status">保存されました</span>
+                    </div>
+                    <textarea id="memo-textarea" class="memo-textarea" placeholder="この問題に関するメモを入力..." oninput="saveMemo()"></textarea>
+                </div>
+                
+                <div id="nav-buttons-container" style="display: flex; justify-content: space-between; gap: 10px; margin-top: 15px;">
+                    <button type="button" id="btn-prev" class="btn btn-outline" onclick="prevQuestion()" style="flex: 1;">← 前の問題</button>
+                    <button type="button" id="btn-next" class="btn btn-primary" onclick="nextQuestion()" style="flex: 1;">次の問題 ➔</button>
+                </div>
+
+                <button type="button" id="btn-back-to-list" class="btn btn-outline hidden" onclick="returnToListDynamic(event)" style="margin-top: 10px;">📋 一覧に戻る</button>
+            </div>
+        </div>
+
+        <!-- 結果画面 -->
+        <div id="result-view" class="card hidden" style="text-align: center;">
+            <div class="bracket-title" style="margin: 20px 0;">学習完了！</div>
+            <div id="score-display" class="score-display">8 / 10</div>
+            <p id="result-message" style="margin-bottom: 30px; font-weight: 700;"></p>
+            <button type="button" class="btn btn-primary" onclick="returnToMenuFrom(event, 'result-view')">トップメニューへ戻る</button>
+        </div>
+    </div>
+<script>
+// --- 問題データ (前編: 第1章〜第3章) ---
+const quizDataPart1 = [
+    // 第1章
+    {
+        id: "c1_q1", type: "exercise", chapter: 1,
+        text: "2015年の広告市場規模について、間違っているものは次のうちどれか",
+        options: ["インターネット広告市場規模は2015年に1兆1000億円を超えた", "インターネット広告市場規模は、今や新聞広告市場規模とほぼ同等になろうとしている", "インターネット広告の市場規模が拡大している理由として、メディアとしての価値が広く認められたことがあげられる", "インターネットは「情報過多の中で、知りたい情報だけを素早く切り取りたい」というユーザーニーズにマッチしたメディアである"],
+        answer: 1,
+        explanation: "インターネット市場は年々大きくなり、今やテレビに次ぐ大きな市場を築いている。"
+    },
+    {
+        id: "c1_q2", type: "exercise", chapter: 1,
+        text: "事業ドメインの説明として間違っているものは次のうちどれか",
+        options: ["事業ドメインは、1企業につき1つ定めるのが定石である", "インターネットの規模拡大によってビジネスの状況が変わることで、事業ドメインを変更することも珍しくない", "競争優位をもたらす製品やサービスなどの「固有技術」によって特徴づけられる", "その企業自身が生き残れる特有の市場を見つけることも重要なポイントである"],
+        answer: 0,
+        explanation: "事業ドメインは、市場と技術と機能によって定義され、能力をもとに複数の事業ドメインを持つことも珍しくなくなっている。"
+    },
+    {
+        id: "c1_q3", type: "exercise", chapter: 1,
+        text: "インターネットの特性を生かして直接的に利益を得るビジネス活動の例として間違っているものは次のうちどれか",
+        options: ["ECサイトを用いて小売りを行う", "コーポレートサイトで事業内容を伝える", "ページ内に広告枠を設け、表示期間や回数などに応じて広告掲載料を受け取る", "デジタルデータのダウンロード販売を行う"],
+        answer: 1,
+        explanation: "コーポレートサイトで事業概要を伝えることは、オフラインで事業を行っている企業にも見られる活用方法であるため、ネット単体での企業活動であるとは言えない。よって選択肢2が誤り。"
+    },
+    {
+        id: "c1_q4", type: "exercise", chapter: 1,
+        text: "上場企業のIRについてWebサイト運営業務で行わなければならないことについて間違っているものは次のうちどれか",
+        options: ["4半期ごとに決算短信を適時開示する", "財務情報(損益状況)の公開", "リアルタイムの株価情報の伝達", "コンプライアンスの順守"],
+        answer: 2,
+        explanation: "上場企業のIRに関する義務は、投資家が投資判断を行うための決算、有価証券報告書などの開示、各種法令規則に従ったコンプライアンス順守が代表的である。リアルタイムの株価情報の発信は義務ではない。"
+    },
+    {
+        id: "c1_q5", type: "exercise", chapter: 1,
+        text: "昨今の企業活動で重視されるCSRが重要視されるようになった理由として、間違っているものは次のうちどれか",
+        options: ["2012年より総務省の税制優遇措置が取られるようになったため", "企業活動において、法律や規則、社会規範など一般的な倫理法令に沿う、企業コンプライアンスの徹底が求められるようになったため", "企業活動において、顧客との間により深い関係を作ることが重要になったため", "市民や地域社会との共生なしに自社の都合を優先しては企業が存続できないことがわかったため"],
+        answer: 0,
+        explanation: "企業が存続するためには、コンプライアンスの順守や、社会との共生を念頭に置いた利益創出活動が重要になっている。"
+    },
+    {
+        id: "c1_q6", type: "exercise", chapter: 1,
+        text: "ECビジネスを説明した次の文章について、空欄に入る言葉の組み合わせとして正しいものは、次のうちどれか\n「(ア)とは、商店街やショッピングセンターなど単独店舗が集まった商業集積を指し、各テナントや出店者のことを(イ)という。インターネットビジネスでも同様の用語が使われる。(ア)としての集客力が強いということは、膨大な(イ)群のなかから、自店が選ばれるための差別性や販売促進が必要とされる、ということになる」",
+        options: ["ア:モール\nイ: マーチャント", "ア: Eコマース\nイ:カスタマー", "ア:サプライヤー\nイ: マーチャント", "ア:モール\nイ:アウトソース"],
+        answer: 0,
+        explanation: "「ショッピングモール」という言葉が示すとおり、複数の店舗がひとつの場所に集まって商業スペースを形作ることをモール (mall) という。それぞれの店舗は「商人」や「商店主」を意味するマーチャント (merchant) と表現される。"
+    },
+    {
+        id: "c1_q7", type: "exercise", chapter: 1,
+        text: "従来の大きな画面を備えたパソコン中心のインターネットと比較して、モバイルインターネットが支持される理由として、間違っているものは次のうちどれか",
+        options: ["課金モデルの成立のしやすさ", "Bluetooth機能の搭載", "アプリによる情報提供手段の拡充", "カメラ機能の搭載"],
+        answer: 1,
+        explanation: "モバイルインターネットは、キャリアと紐づいた課金のしやすさやアプリ、カメラによるQRコード読み取りやGPS機能など、先進的な機能を活用できる。Bluetooth はパソコンでも用いられている通信方法であり、モバイルに特有ではない。"
+    },
+    {
+        id: "c1_q8", type: "exercise", chapter: 1,
+        text: "APIの説明として正しいものは次のうちどれか",
+        options: ["他サイトが保有するなど、異なる所有者の情報を活用できるようにするためのインターフェイスである", "すべてのAPIは、利用者には送信量に応じて有償で提供される", "データの著作権が問題となっている", "スマホアプリで利用できない"],
+        answer: 0,
+        explanation: "API は異なる所有者データを活用するための規約のことで、アプリなどでも活用されている。うまく活用することで、データをゼロから収集することなしに、利便性の高い Webサイトが構築できる。"
+    },
+    {
+        id: "c1_q9", type: "exercise", chapter: 1,
+        text: "不正アクセスを防ぐために企業側が対処するべき注意点として間違っているものは次のうちどれか",
+        options: ["データアクセス権限の設定", "企業コンプライアンスのガイドライン策定と従業員の教育", "社内グループでのパスワード共有", "物理的なメディアドライブの接続回避措置"],
+        answer: 2,
+        explanation: "不正アクセスを防ぐためには、外部からのアクセスを制限するために関係者のみにアクセス権限を設定し、外部記憶装置にコピーできないような措置が必要である。また、従業員のモラルを高める教育活動も重要である。"
+    },
+    {
+        id: "c1_q10", type: "exercise", chapter: 1,
+        text: "情報セキュリティポリシーについて、次の説明のうち、間違っているものは次のうちどれか",
+        options: ["大別すると「基本方針」「対策基準」「実施手順」の3段階で構成されているが、全て社外秘として安全を確保する必要がある", "組織内の情報資産について、適切なセキュリティ対策を実施するための規約を文書化したものである", "制定しても、情報セキュリティが完全に守られるわけではなく、確実に実施することが重要である", "社内外の状況変化により継続的に見直す必要がある"],
+        answer: 0,
+        explanation: "企業がもつ情報そのもの及び情報を管理する仕組みなどのセキュリティ対策を適切に実施するために、方針と手法を文書化したものを「情報セキュリティポリシー」という。これはセキュリティ対策の完全性を保証するものではなく、企業は策定してから継続的な運用を行うために、定期的に評価・見直しを繰り返し、ポリシーを発展させていくことが大切である。"
+    },
+    {
+        id: "c1_q11", type: "exercise", chapter: 1,
+        text: "情報セキュリティポリシーの3階層の構成要素として間違っているものは次のうちどれか",
+        options: ["基本方針", "対策基準", "実施手順", "運用管理"],
+        answer: 3,
+        explanation: "情報セキュリティーポリシーは、経営者の基本方針・宣言を記載した「基本方針」、基本方針を実践するための具体的な規則を記載した「対策基準」、対象者や用途別に範囲や値等を明確に記載したマニュアルなどの「実施手順」の、大きく3階層で構成される。"
+    },
+    {
+        id: "c1_q12", type: "exercise", chapter: 1,
+        text: "景品表示法で定められているクローズド懸賞の一般懸賞について、懸賞商品の上限額として正しいものは次のうちどれか",
+        options: ["取引価額の5倍 (上限5万円)", "取引価額の10倍 (上限5万円)", "取引価額の20倍 (上限10万円)", "取引価額の25倍 (上限20万円)"],
+        answer: 2,
+        explanation: "景品表示法において、クローズド懸賞 (実施する企業の商品購入や入会などの商取引が必要な懸賞)を実施する場合、一般懸賞では取引価額の20倍(上限10万円)と定められている。なお、共同懸賞(複数の企業や店舗が実施する懸賞)では上限30万円と定められている。"
+    },
+    {
+        id: "c1_q13", type: "exercise", chapter: 1,
+        text: "デジタル著作物とアナログ著作物の特性の違いを表わす文章として間違っているものは、次のうちどれか\nア:複製及び改変の容易性に違いがある\nイ:両者とも著作権保有者の所在があいまいである\nウ:不特定多数へのコンテンツ送信の容易性に違いがある\nエ:デジタル著作物は、権利侵害の監視機関が少ない\nオ:デジタル著作物は、流通経路の特定が困難である\nカ:適用される著作権法令が別である",
+        options: ["イとカ", "エとオ", "オとカ", "アとウ"],
+        answer: 0,
+        explanation: "インターネット上の音楽や映像の無断コピーでCDが売れなくなる、イラスト・キャラクターの無断転用など、著作物への関心が高まっている。意図的に著作権を侵害するつもりはなくても、結果として侵害に該当するケースもあるので、素材関係の取り扱いには細心の注意が必要である。"
+    },
+    {
+        id: "c1_q14", type: "exercise", chapter: 1,
+        text: "Webサイトで著作物を取り扱う際、特に問題がないと考えられるのは、次のうちどれか",
+        options: ["ある有名なキャラクターのファンであるため、SNSのプロフィール画像などに利用した", "自分で撮影したある芸能人のオフショット写真をTシャツにプリントし、Webサイトで告知・販売した", "あるミュージシャンのコンサートに行き、一部について動画を撮影し、Webサイトで公開した", "ある写真について、クリエイティブ・コモンズ・ライセンスで「原著作者の表示」のみを求めていたため、無断で自分のWebサイトでその写真を利用し、原著作者の名前とサイトリンクを近くに掲載した"],
+        answer: 3,
+        explanation: "クリエイティブ・コモンズは、著作者の承諾する範囲内であれば、確認なく二次利用することが可能である。"
+    },
+
+    // 第2章
+    {
+        id: "c2_q15", type: "exercise", chapter: 2,
+        text: "期間を限定して公開され、企画内容を優先したエンターテイメント性の高いサイトとして正しいものは次のうちどれか",
+        options: ["IRサイト", "キャンペーンサイト", "コーポレートサイト", "ニュースサイト"],
+        answer: 1,
+        explanation: "キャンペーンサイトは日常の情報発信が目的ではなく、期間限定の取り組みやマスコミ連動を目的としていることが多い。情報設計としては、ブランドやプロダクトに特化したサイトと似ている面もあるが、ソーシャルメディアと連携して投稿を促したり、アイデアや意見を募集したりと、消費者参加型のしかけを行うことが多い。また、ゲームや動画などのエンターテインメント性を前面に出したサイトもある。"
+    },
+    {
+        id: "c2_q16", type: "exercise", chapter: 2,
+        text: "Webサイト運営における最終責任者であるWebマスターに与えられたミッションとして、正しいものは次のうちどれか",
+        options: ["市場や現場のニーズにマッチしたコンテンツや機能の実装を進めること", "「部分最適」の視点から、関係部署との調整を経てルールとワークフローを設定すること", "「全体最適」の視点から、整合性と網羅性に配慮し、中長期的にROIを最大化させること", "各事業・各商品に適合した魅力的なコンテンツを造り出すこと"],
+        answer: 2,
+        explanation: "プロジェクトマネージャーが兼任しているケースなど、その職務は様々であるが、Webマスターの共通ミッションは「全体最適」の視点から Web サイトの果たすべき役割やゴールを設定し、その実現に伴うルール・ワークフローの調整、費用対効果についても仔細に把握し、中長期的にROI (投下資本利益率)を最大化することにある。"
+    },
+    {
+        id: "c2_q17", type: "exercise", chapter: 2,
+        text: "プロジェクトマネジメントを導入することで得られる効果として間違っているものは次のうちどれか",
+        options: ["適切な管理によるリソースの手待ち時間の削減", "スコープとタスクの細分化による適切なスケジュール設定", "コスト管理による高度な能力を持った人材の確保", "スケジュールとタスク管理による想定通りの利益確保"],
+        answer: 2,
+        explanation: "コスト管理と高度な能力を持った人材の投入可能性は直接的には関連しない。"
+    },
+    {
+        id: "c2_q18", type: "exercise", chapter: 2,
+        text: "ワークフローやルールを明確にし、業務プロセスを維持・改善することで継続的に品質の向上を計るための管理手法を何というか",
+        options: ["PDCAサイクル", "リスクマネジメントシステム", "品質マネジメントシステム", "エスカレーションルール"],
+        answer: 2,
+        explanation: "品質マネジメントシステムは、Webサイトの運営に関係する全ての人を対象に構築し、運用する中で改善を図っていくことが重要である。国際規格としてISO9001、Webサイトやコンテンツに関連した規格としては、ISO13407 (ヒューマンセンタードデザイン)、ISO27001/ISMS (情報セキュリティマネジメント)、JIS Q 15001 (個人情報保護)などがある。"
+    },
+    {
+        id: "c2_q19", type: "exercise", chapter: 2,
+        text: "Webサイトの納品時にディレクターが果たす品質チェックとして間違っているものは次のうちどれか",
+        options: ["バリデーションチェック", "企画のコンプライアンスチェック", "表記チェック", "プログラムの動作チェック"],
+        answer: 1,
+        explanation: "制作段階に入る前に、納品時の品質チェック項目を定めておきたい。企画のコンプライアンスチェックは、Webサイトの品質ではなく、プロジェクトそのものの適否に関わる判断であるので、誤りである。"
+    },
+    {
+        id: "c2_q20", type: "exercise", chapter: 2,
+        text: "Webサイト制作のプロジェクトにおいて、設計フェーズでディレクターとしてディレクション業務に特化する担当者が果たすべき役割として間違っているものは、次のうちどれか",
+        options: ["スコープを定義し、リソースや概算スケジュール、コスト積算など、プロジェクトが実現するまでのアウトラインを整理する", "プロジェクトの目標達成に向け、メンバーの能力を最大限に引き出し、与えられた役割を確実に果せるように環境を整備し、マネジメントする", "要件定義をベースに立てたプロジェクト計画を元に、実際の制作や開発の全体像を決め、さらに具体的な制作案に落とし込んでいく", "サイトの全体像に基づいて立てたサイト構成やデザイン、システム開発の方針など、具体的な計画をクライアントに報告し、承認を得る"],
+        answer: 0,
+        explanation: "企画フェーズで立てられたプロジェクト計画を、ユーザーエクスペリエンスとしてどのように効果的に提供していくことができるかは、この設計・開発フェーズで決まる。全体構造の設計を基に、ユーザーインターフェース設計やワイヤーフレームといった設計全般から、デザイン・コーディングの際の仕様を固めて開発を行っていく。スコープの定義やスケジューリング、コスト積算などは、ディレクション業務ではなくプロジェクトマネジメント業務である。"
+    },
+    {
+        id: "c2_q21", type: "exercise", chapter: 2,
+        text: "コンペに関する説明について間違っているものは、次のうちどれか",
+        options: ["コンペは複数企業の参加が一般的である", "提案内容と見積金額との総合的な判断を通じて発注先が決められることが多い", "コンペは準備も簡単で新しい顧客を見つけることが可能なため、参加に前向きな企業がほとんどである", "コンペには指名競争入札の他、広く応募を受け付ける一般競争入札もある"],
+        answer: 2,
+        explanation: "コンペに参加するのは準備に時間や労力がかかる一方、契約が決まるかどうかはわからないため、参加会社にとっては「骨折り損」になる可能性がある。したがって、得意業種のサイトや、収益が大きいと予想される場合、コンペフィーがある場合など、状況に応じて参加を決定することも多い。"
+    },
+    {
+        id: "c2_q22", type: "exercise", chapter: 2,
+        text: "ヒアリングの進め方について、間違っているものは次のうちどれか",
+        options: ["ヒアリングシートを用意するとスムーズに進められる", "効率を考えて、決裁権者のみに話を聞いた方がよい", "具体的な答えを引き出すように努めることが、その後のプロジェクト進行に役立つ", "Webサイトのアクセス解析データで現状を把握しておくと、より密度の濃いヒアリングになる"],
+        answer: 1,
+        explanation: "ヒアリングはヒアリングシートを用いると効率的に進められる。また、発注元企業の担当者だけでなく決裁権者にも同席してもらい、具体的な要望や求めている要件を聞くことが重要である。"
+    },
+    {
+        id: "c2_q23", type: "exercise", chapter: 2,
+        text: "提案依頼書 (RFP) を設定することによるメリットを説明する文章として間違っているものは次のうちどれか",
+        options: ["開発途中にトラブルがあった場合でも、契約条項により、民事訴訟で最低限の権利が守られる", "受注者との打ち合わせを円滑にし、短期間で適切な情報構造やコンテンツ・制作の仕様を策定できる", "開発に着手するまでの期間が圧縮され、品質・費用・納期の達成確率を高めることができる", "発注者側の目的やビジョンが受注候補に明確に伝わることで、適切な受注者を見極めることができる"],
+        answer: 0,
+        explanation: "発注者は適切な RFP を設定することで質の高い受注候補者を見極めることができ、発注後の打ち合わせや開発もスムーズになり、品質・費用・納期の達成率も高まる。しかし、頻繁な業務改革や組織変更などによるやむを得ない RFP変更には当然リスクが伴うので、RFP にその旨を明記しておき、受注候補者にきちんと伝えておくことが大切。"
+    },
+    {
+        id: "c2_q24", type: "exercise", chapter: 2,
+        text: "プロジェクトにおける要件定義の説明文として正しいものは次のうちどれか",
+        options: ["顧客・機能・技術の3軸に広がりと差別化の観点を加えて戦略を類型化したものである", "クライアント企業の要請を整理して明確にした文書である", "クライアント企業の事業領域を明確に定義した文書である", "売り手の観点で整理した戦略上の要点を定義したものである"],
+        answer: 1,
+        explanation: "要件定義の「要」は「クライアント企業の要請」という意味である。要件をしっかりと定義することで、プロジェクトの具体的な計画と着手が可能となる。"
+    },
+    {
+        id: "c2_q25", type: "exercise", chapter: 2,
+        text: "要件定義を設定する際の留意点として間違っているものは、次のうちどれか",
+        options: ["必要な調査事項としては、「費用対効果」「実現可能性」「戦略的な見地からの必要性」「相対的な優先度」などがある", "クライアントの要請をきちんと定義できているかをチェックする際、「分かりやすさ」「実現性」「予測の根拠」などに留意する", "コントロール可能な計画にするために、「費用」「品質」「要員」などについて詳細なプランニングが必要となる", "実効性のある要件定義を作成するためには、クライアント企業の経営戦略そのものの理解・共有が必要となる"],
+        answer: 2,
+        explanation: "クライアントの要望を調査・分析し、実現すべき機能を具体的に設定するのが要件定義だ。オリエンテーションを受けてから行う場合、受注者が確定した上で改めて詳細に行う場合などタイミングはいろいろだが、プロジェクトの第一歩として重要なステップとなる。"
+    },
+    {
+        id: "c2_q26", type: "exercise", chapter: 2,
+        text: "要件定義において、商品、サービス戦略を決定する際に用いられるマーケティングの4Pに含まれる検討項目として間違っているものは次のうちどれか",
+        options: ["Personality(利用者の人格)", "Price(価格)", "Promotion (プロモーション)", "Product(製品)"],
+        answer: 0,
+        explanation: "4Pとは、売り手側の観点で整理したサービス戦略上の要素の分類方法。製品(Product)、価格(Price)、プロモーション (Promotion)、流通(Place) の4つの頭文字のこと。"
+    },
+    {
+        id: "c2_q27", type: "exercise", chapter: 2,
+        text: "企業ドメインを定義する際に用いられる 「CFT分析」の定義軸に含まれないものは、次のうちどれか",
+        options: ["顧客", "機能", "技術", "市場"],
+        answer: 3,
+        explanation: "企業の活動の範囲や領域を指す言葉。個別事業単位を事業ドメインと分ける場合もあるが、特に区別せずに用いる場合もある。企業ドメインは Customer (顧客)、Function(機能)、Technology(技術)の3軸から定義できる (CFT 分析)。"
+    },
+    {
+        id: "c2_q28", type: "exercise", chapter: 2,
+        text: "プロジェクト計画の流れの図で、(ア) (イ) (ウ) (エ) (オ)にあてはまる正しい流れの組み合わせは次のうちどれか",
+        image: "q28.png", // ★ 画像ファイルのパス指定[cite: 2]
+        options: ["ア:プロジェクト企画\nイ:情報化計画\nウ:スコープ計画定義\nエ: WBS\nオ:個別計画", "ア: WBS\nイ:情報化計画\nウ:スコープ計画定義\nエ:個別計画\nオ: プロジェクト企画", "ア:情報化計画\nイ:個別計画\nウ:スコープ計画定義\nエ: プロジェクト企画\nオ:WBS", "ア:情報化計画\nイ:プロジェクト企画\nウ:WBS\nエ:スコープ計画定義\nオ:個別計画"],
+        answer: 3,
+        explanation: "Web制作プロジェクトは、受注前の段階ですでに成否が決まっているといっても過言ではない。プロジェクトの成果を曖昧にしないためにも、計画を詳細かつ個別に検討し、文書化しておくことが大切である。"
+    },
+    {
+        id: "c2_q29", type: "exercise", chapter: 2,
+        text: "プロジェクト計画書を作成する効果に当てはまらないものは、次のうちどれか",
+        options: ["提案依頼内容を解決するための実施内容を把握できる", "プロジェクトの終了まで変更することのない計画書類として用いることができる", "リソースやスケジュールなどを把握することができる", "途中から参加したメンバーでもプロジェクトの背景や戦略を把握できる"],
+        answer: 1,
+        explanation: "プロジェクト計画書とは、策定したプロジェクトの全体計画や個別計画を、具体的な戦略なども含め細部にわたって詳しく記述したものである。したがって、発注者の提案依頼や提案依頼書に対して「具体的な回答」になっている必要がある。つまり、発注者が求めるビジネスの「最適化」を実現する内容となっていることが求められている。"
+    },
+    {
+        id: "c2_q30", type: "exercise", chapter: 2,
+        text: "「情報化企画」の説明として間違っているものは次のうちどれか",
+        options: ["プロジェクト実施にあたって「目標実現のための情報化とは何か (What)」を検討する段階である", "現状把握と課題を定義する", "経営戦略に基づいた情報戦略をまとめるプロセス", "目標や効果測定方法については、検討事項に含まれない"],
+        answer: 3,
+        explanation: "情報化企画は「プロジェクト目標実現のための情報化とは何か (What)」を検討する段階であり「どうすればその情報化を構築できるのか (How)」の検討については、次の「プロジェクト企画」の段階で行う。内容としては以下のとおり。1.要件定義における、情報収集と現状把握、2.クリエイティブブリーフの作成、3.期待される効果、4.プロジェクト戦略と情報戦略の立案、5.条件設定"
+    },
+    {
+        id: "c2_q31", type: "exercise", chapter: 2,
+        text: "準委任契約に関する説明として間違っているものは次のうちどれか",
+        options: ["期間に応じての支払いとなることが一般的である", "完成物の提出をもって契約完了となる", "業務委託契約とは異なる作業内容に関して結ばれることが多い", "コンサルティング業務はこの契約形態に当てはまると考えられる"],
+        answer: 1,
+        explanation: "準委任契約は完成責任のない案件に当てはまる契約形態であり、業務委託契約とは異なる。具体的には、企画や保守、コンサルティング業務が該当する。"
+    },
+    {
+        id: "c2_q32", type: "exercise", chapter: 2,
+        text: "業務契約の説明として正しいものは、次のうちどれか",
+        options: ["完成品の提出できない運用案件では契約を結ぶことができない", "現行の契約制度では、成果物の完成責任を受注者に問うことはできない", "瑕疵担保責任は限度額がない場合もある", "契約書は通常、成果物の納品までに作成すればよい"],
+        answer: 2,
+        explanation: "制作業務おける契約では、企画や保守、コンサルティングといった完成品を伴わない業務も該当する。また、通常の制作業務においては成果物の完成を持って契約履行とするのが一般的であり、仕事の開始前に契約を締結することが望ましい。瑕疵担保については限度額がない条文が含まれていることもあり、そのまま了承してしまうと受注者のリスクが増大するので注意が必要である。"
+    },
+    {
+        id: "c2_q33", type: "exercise", chapter: 2,
+        text: "1人月という言葉の説明として間違っているものは次のうちどれか",
+        options: ["20人日の作業量のこと", "25人日の作業のこと", "1か月分の作業のこと", "主に期間ペースの見積り額の計算で用いられる"],
+        answer: 1,
+        explanation: "1人月は、1か月の作業日数を20日と換算して計上する作業量の単位である。"
+    },
+    {
+        id: "c2_q34", type: "exercise", chapter: 2,
+        text: "見積書の提出に関する説明のうち、間違っているものは次のうちどれか",
+        options: ["宛名、作成者、発行日、見積り有効期限を記載する", "単価や作業数量の間違いに気をつける", "デジタルフォーマットの見積書は無効とされる", "見積り項目を適切に分けておくと、わかりやすいことに加えて、作業量変更にも対応できて便利である"],
+        answer: 2,
+        explanation: "見積書は、クライアント企業にとってわかりやすい項目名を心がけ、宛名と差出人(作成者)、発行日と有効期限を示すことが大切である。スピーディなやりとりが求められるためデジタルベースでのやり取りも多い。"
+    },
+    {
+        id: "c2_q35", type: "exercise", chapter: 2,
+        text: "プロジェクトメンバーを選抜する際に検討する項目として、必ずしも必要でないものは次のうちどれか",
+        options: ["類似プロジェクトでの成功経験", "保有スキル", "プロジェクトへのモチベーション", "役職名"],
+        answer: 3,
+        explanation: "プロジェクトを成功させることが目的であるため、その目的のために、適切な人選を行う。類似プロジェクトでの成功経験や、保有するスキル、モチベーションや参加が可能な期間など、複数の視点でメンバー選出を行う必要がある。"
+    },
+    {
+        id: "c2_q36", type: "exercise", chapter: 2,
+        text: "Web制作プロジェクトで、次のような問題が発生したとする。どのスタッフに相談し、改善策を考えてもらうのが最もよいと考えられるか。\n「ユーザーから、特に21:00から23:00の間にアクセスがしづらくなり、ページがなかなか表示されず困っているとの問い合わせを受けたスタッフ数名が、その時間帯に実際にアクセスしてみたところ、確かにページ表示が通常よりも大幅に遅いようである」",
+        options: ["プランナー", "コーダー", "システムエンジニア", "デザイナー"],
+        answer: 2,
+        explanation: "同一ページの表示が特定の時間帯に遅くなるのには、サーバー負荷の増大が考えられる。そのため、負荷を測定し、具体的な対応を考える職能者のアサインが必要である。"
+    },
+    {
+        id: "c2_q37", type: "exercise", chapter: 2,
+        text: "データセンターが重用される理由として間違っているものは次のうちどれか",
+        options: ["停電リスクに対する信頼性", "地震に対する信頼性", "身元不明者の立ち入り排除", "ソフトウェアアップデートの迅速な適用"],
+        answer: 3,
+        explanation: "データセンターは各種のコンピュータやデータ通信などの装置を設置・運用することに特化した建物の総称のこと。サーバーを置き、自由に運用できるが、インストールするソフトウェアなどの管理は契約者が行うこととなる。"
+    },
+    {
+        id: "c2_q38", type: "exercise", chapter: 2,
+        text: "プロジェクトマネジメント上、よく使われるタスク管理手法である「ガントチャート」のメリットとして間違っているものは、次のうちどれか",
+        options: ["作業と時間軸が一目で把握できる", "プロジェクトの全体像と個別の作業の関係性がわかる", "計画と実績が一目でわかる", "作業同士の依存関係を論理的に整理し可視化できる"],
+        answer: 3,
+        explanation: "ガントチャートは作業の時間的な順序の依存関係は明らかにできるが、複雑な作業同士の依存関係がわかりにくく、遅れが生じたときに影響が出る作業の特定が難しい。作業の実施段階でのやむをえない変更に対する柔軟性にも欠けるので、他の手法と併用することが理想的である。"
+    },
+    {
+        id: "c2_q39", type: "exercise", chapter: 2,
+        text: "スケジュール管理におけるリスクマネジメントにおいて、以下に挙げた進捗遅延の原因となるリスク要因のうち、予測可能で、回避することが可能な要因はどれか選べ",
+        options: ["メンバーの退職や病欠", "発注者都合による計画変更", "リソースの調達ミス", "手配した素材の納期遅れ"],
+        answer: 2,
+        explanation: "リスクが招く遅延の原因は、「潜在的な問題」によるものと「表面化した問題」に分けることができる。制作メンバーの能力不足や手配素材の納期遅れなど、受注前からすでに存在する先行要因は、予見できコントロール可能なものも多いので、綿密かつ重点的な対策によってつぶしていく「予兆管理」が必要である。"
+    },
+    {
+        id: "c2_q40", type: "exercise", chapter: 2,
+        text: "発注会社が支払期日や書面の交付義務、書類の作成・保存義務に違反するなどの問題が発生した場合に、勧告措置が行われる法案は、次のうちどれか",
+        options: ["ISO14001", "下請代金支払遅延等防止法", "PI法", "標準外注取引基本契約法"],
+        answer: 1,
+        explanation: "下請取引の適正化を図り、下請事業者の利益を保護するため、「下請代金支払遅延等防止法」が制定されている。外注管理に関連した法規として、内容を理解し、注意しておくとよい。"
+    },
+    {
+        id: "c2_q41", type: "exercise", chapter: 2,
+        text: "仮想化環境に関する説明として正しいものは次のうちどれか",
+        options: ["あるOSの中で別のOSを動作させる仕組みである", "同一ネットワークに接続している人であれば、誰でもアクセスできる", "物理的なサーバーを用意するよりも高速な環境である", "コンピューターウイルスに侵蝕されやすいのが課題である"],
+        answer: 0,
+        explanation: "仮想化環境は、起動しているOSの中で別のOSを動作させる仕組みである。通常のOSと同じように、パスワードによってユーザーの権限を個別に設定できる。ただし、CPUの処理負荷が高く、動作は概して遅いといえる。"
+    },
+    {
+        id: "c2_q42", type: "exercise", chapter: 2,
+        text: "ステージング環境に求められる要件として間違っているものは次のうちどれか",
+        options: ["確実な動作を目的として、本番環境よりも各種ソフトウェアのバージョンが上の環境を用意する", "関係者以外がアクセスできないように、閲覧制限を設ける", "本番サーバーに問題なくデータが引き継げるように、環境を整えておくことが望ましい", "社外の関係者など、社内ネットワーク以外からの閲覧も考慮し、準備する"],
+        answer: 0,
+        explanation: "ステージング環境は最終成果物 (納品物)が本番環境で正常に表示・実行されるように、事前にシステムを構築し、検証できることを目的としている。本番環境とできるだけ同じ条件にすることで、適切なテストやデバッグが可能となる。"
+    },
+    {
+        id: "c2_q43", type: "exercise", chapter: 2,
+        text: "PDCAの説明として間違っているものは次のうちどれか",
+        options: ["さまざまな品質改善に用いられる考え方である", "CはControl (制御)を表す", "PDCAサイクルを継続的に回すためには、定量的な目標設定が有効である", "DはDo (実行)を表す"],
+        answer: 1,
+        explanation: "Cは「Check」の頭文字である。"
+    },
+    {
+        id: "c2_q44", type: "exercise", chapter: 2,
+        text: "コミュニケーションに関する次の文章の空欄に入る言葉の組み合わせとして正しいのは、次のうちどれか。\n「相手の(ア) に合わせた用語を使い、なるべくわかりやすい言葉と表現で伝えることが大切。外部スタッフとは特に、(イ)を残すために、あえて文字ベースのコミュニケーションを選ぶこともある。コミュニケーション全般では、(ウ)と(エ)の2つを意識しておきたい。」",
+        options: ["ア: リテラシー\nイ:ボトルネック\nウ:緊急性\nエ:即応性", "ア:ボトルネック\nイ:エビデンス\nウ:緊急性\nエ:即応性", "ア: リテラシー\nイ:エビデンス\nウ:透明性\nエ:即応性", "ア:ボトルネック\nイ:エビデンス\nウ:透明性\nエ:即応性"],
+        answer: 2,
+        explanation: "相手のリテラシーに合わせた用語を使い、なるべくわかりやすい言葉と表現で伝えることが大切。外部スタッフとは特に、エビデンス(証拠) を残すために、あえて文字ベースのコミュニケーションを選ぶこともある。コミュニケーション全般では、透明性と即応性の2つを意識しておきたい。"
+    },
+    {
+        id: "c2_q45", type: "exercise", chapter: 2,
+        text: "各状況に適したコミュニケーション手段の組み合わせとして適切さに欠けると考えられるものは、次のうちどれか",
+        options: ["機能実装仕様の変更について口頭で伝える", "デザインのフィードバックについてスクリーンショットに赤入れをして伝える", "協議事項の回答についてメーリングリストで返信する", "新規アサインメンバーについてミーティングで伝える"],
+        answer: 0,
+        explanation: "機能実装仕様など複雑で個人の認識の差が生まれやすいものに関しては、文章や図を用い、きちんと整理した上で伝えることが望ましい。"
+    },
+    {
+        id: "c2_q46", type: "exercise", chapter: 2,
+        text: "昨今、重要性が改めて認識されている「リスクマネジメント (企業活動全体における危機管理)」の説明文として正しいものは、次のうちどれか",
+        options: ["社会システムの危険度評価の手法のこと", "企業の営業活動に伴うさまざまなリスクを、最小の費用で食い止めるために行う危機管理のこと", "社会を取り巻くリスクに関する正確な情報を、行政、専門家、企業、市民などのステークホルダーである関係主体者間で共有し、相互に意思疎通を図ること", "リスク対処法の1つで、リスクが実際に現実化した場合の損失補償を準備すること"],
+        answer: 1,
+        explanation: "企業におけるリスクとは「事業機会に関連するリスク」と「事業活動の遂行に関するリスク」の大きく2つに分けられており、最も単純なリスクマネジメントの流れは「リスク識別」 「リスク評価」「リスク対応」の3つのステップからなる。"
+    },
+    {
+        id: "c2_q47", type: "exercise", chapter: 2,
+        text: "リスクマネジメントの用語説明として間違っているものは、次のうちどれか",
+        options: ["定量分析とは、客観的な数値などの量的に表現可能なデータに基づいて分析する手法のことである", "定性分析とは、意見や要望などの量的に表現できないデータに基づいて分析する手法のことである", "リスク評価とは広くリスク全体に網をかけて、主要なものを漏れなく捉えるステップでリスク要因を定義する段階である", "リスクアセスメントとは、危険度を質的・量的に評価する手法であり、また、広く社会システムや社会制度がもつ危険度評価の手法のことである"],
+        answer: 2,
+        explanation: "リスク評価とは、識別したリスクに対して、顕在化したときの大きさ (インパクト)と顕在化の頻度との両面の把握を通じて評価することである。"
+    },
+    {
+        id: "c2_q48", type: "exercise", chapter: 2,
+        text: "Webサイトのリリース時の注意点について間違っているものは次のうちどれか",
+        options: ["稼働テストは、納品や本番環境への設置といったリリース方法を問わず、必ず行ったほうがよい", "テスト環境で問題がなければ、本番環境ではクロスブラウザテストを行わなくてよい", "テキストチェックとは、原稿の誤字脱字やコンプライアンスに抵触していないかなどを確認することである", "結合テストとは、実装したプログラムの機能を複数組み合わせて行う動作として、問題が発生しないかどうかのテストである"],
+        answer: 1,
+        explanation: "クロスブラウザテストは、要件定義で定めたOSとWeb ブラウザの組み合わせで、制作者の意図したデザインや機能が実現されているかをチェックすること。テスト環境だけでなく、本番環境に移行した後もすみやかに実施する。"
+    },
+    {
+        id: "c2_q49", type: "exercise", chapter: 2,
+        text: "バリデーションテストの説明として間違っているものは、次のうちどれか",
+        options: ["W3CとISOの2団体の基準に沿ったページかどうかのテストである", "HTMLやCSSのソースコードについて実施される", "このテストを実施することで、アクセシビリティを高めることにもつながる", "テストの実施にあたっては、オンラインの無償ツールが利用できる"],
+        answer: 0,
+        explanation: "バリデーションテストは、HTMLやCSSのソースコードが、W3Cの定める標準仕様に従っているかを確認するテストである。オンラインの無償ツールを利用して実施可能。アクセシビリティを高める効果もある。"
+    },
+    {
+        id: "c2_q50", type: "exercise", chapter: 2,
+        text: "Webサイト制作の運用・保守フェーズについて、特に当てはまらないと考えられるものは、次のうちどれか",
+        options: ["運用において大切なのは、運用体制、運用方法、運用ルールを整備し実行することである", "一度立ち上げたWebサイトも、運用中の効果検証によって調整作業を実施しないと、本来の目的を達成できないことがある", "更新作業やユーザーサポート、システムの監視などの運用・保守作業を行いつつ、効果検証やプロモーション展開を行う", "バックエンドのシステム開発が中心となる場合、プログラム単体のテストはもちろん、ステージング環境での統合テストをより厳密に行う"],
+        answer: 3,
+        explanation: "プログラムのテストやステージング環境での統合テストは、Web サイト立ち上げ前の「制作(開発) フェーズ」の後半で行うのが一般的。「運用・保守フェーズ」は、Webサイト立ち上げ後の期間である。"
+    },
+
+    // 第3章
+    {
+        id: "c3_q51", type: "exercise", chapter: 3,
+        text: "自社コーポレートサイトの現状分析において、通常、分析対象にすると考えられるサイトは、次のうちどれか\nア:自社サイト\nイ:競合他社サイト\nウ:有名ポータルサイト\nエ: ベンチマーキングサイト",
+        options: ["アとイとウ", "アとイとエ", "アとウとエ", "イとウとエ"],
+        answer: 1,
+        explanation: "Web サイトの現状分析では、自社サイトはもちろん、競合他社サイトやベンチマーキングサイトを分析対象とし、比較・検討するための材料とする。"
+    },
+    {
+        id: "c3_q52", type: "exercise", chapter: 3,
+        text: "Webサイトの現状分析における 「ベンチマーキング」を説明した文章として正しいものは、次のうちどれか",
+        options: ["一般のユーザーを被験者として、商品やソフトウェア、Webサイトなどを実際に使ってもらい、その行動観察と心理変化などの情報を得て、改善に役立てること", "事業やプロジェクトの改善、新規構築のために、成功している事例の調査・研究を行い、そこから成功因子を学び取ること", "キャンペーンや新しいWebサイトの予告を行いたいなど、アクセスした人に何らかの興味を抱かせたい場合に、リリース前に特別サイトをオープンさせることを計画すること", "Webサイトの代表的なユーザー像を「ペルソナ」として詳細にプロファイリングし、そのペルソナの行動プロセスをシナリオとして描くこと"],
+        answer: 1,
+        explanation: "ベンチマーキングとは、事業やプロジェクトの改善、新規構築のために、成功している事例の調査・研究を行い、そこから成功因子を学び取ることである。"
+    },
+    {
+        id: "c3_q53", type: "exercise", chapter: 3,
+        text: "Webサイトの評価手法とその概要の組み合わせとして間違っているものは、次のうちどれか",
+        options: ["ウォークスルー評価では、ユーザーのサイトへの来訪動機やマインドを想定することから調査を行う", "ウォークスルー評価では、使い心地、情報の提示方法や提示順序の問題点などが明らかになる", "ヒューリスティック評価は、あらかじめリスト化した評価項目を元にサイトをチェックしていく手法である", "ユーザーテストは、プロのテスターの行動を観察することに加え、サイトの優劣に関する意見をフィードバックしてもらう手法である"],
+        answer: 3,
+        explanation: "ユーザーテストは、一般ユーザー (被験者)にWebサイト上でのタスクを依頼し、タスク完了までの回遊行動や思考、印象を参考にして問題点を浮き彫りにしていく方法である。"
+    },
+    {
+        id: "c3_q54", type: "exercise", chapter: 3,
+        text: "ユーザー調査の手法の1つである「セントラルロケーションテスト」の説明として正しいものは、次のうちどれか。",
+        options: ["会場調査とも訳される。あらかじめ設定した会場に、会場周辺の通行者をサンプリングするなどして調査対象者を集め、アンケート調査やインタビューを行う手法のこと。", "少人数の対象者に対し、司会者が座談会形式で進めるインタビュー手法であり、対象者の回答の相互作用から、深層心理やひらめきを捉えられる利点がある。", "複雑な量的データや質的データが持つ傾向や特徴を要約し、相互関係を明らかにすることでモデル化する手法。", "データを2軸の相関性で並べ替えることにより、データの序列化を行い、平面上にマッピングしてポジションを把握する手法。"],
+        answer: 0,
+        explanation: "セントラルロケーションテストは、会場調査とも訳される。あらかじめ設定した会場に、会場周辺の通行者をサンプリングするなどして調査対象者を集め、アンケート調査やインタビューを行う手法のこと。"
+    },
+    {
+        id: "c3_q55", type: "exercise", chapter: 3,
+        text: "ユーザーテストを実施する理由として正しいものは、次のうちどれか",
+        options: ["一般のユーザーが、デザイナーが設計したインターフェイスを正しく使えるように訓練するため", "一般のユーザーからの質問に、運営者が適切に答えられるようにするため", "一般のユーザーにWebサイトを実際に使ってもらい、その心理変化などを観察することで、改善に役立てるため", "一般のユーザーからの苦情に対するサポートセンターの負荷を測るため"],
+        answer: 2,
+        explanation: "ユーザーテストは、一般のユーザに Web サイトを実際に使ってもらい、その心理変化などを観察することで、改善に役立てるために行う。なお、ユーザーの来訪動機やマインド(意欲)を想定した上で、調査者がWebサイトを実際に動きまわり、問題点を洗い出す手法をウォークスルー評価といい、ユーザーテストとは異なる。"
+    },
+    {
+        id: "c3_q56", type: "exercise", chapter: 3,
+        text: "アンケート作成時に注意しなければならない点について、間違っているものは次のうちどれか",
+        options: ["解釈に幅のある質問は避ける", "相関性(類似度) の高い質問を連続して問う", "設問が相互に影響しないように順序を工夫する", "回答が偏る選択肢設定を避ける"],
+        answer: 1,
+        explanation: "アンケートの設問は類似度の高いものを連続して配置しないようにするのが重要である。"
+    },
+    {
+        id: "c3_q57", type: "exercise", chapter: 3,
+        text: "ソーシャルメディア活用の効果測定の注意点として不適切であるのは、次のうちどれか。",
+        options: ["定量データと定性データでは前者のほうが重視される", "エンゲージメントの測定指標を決めておくことが大切である", "ソーシャルメディアに標準で用意されている解析機能のほか、サードパーティツールを用いることもできる", "当初の目標と結果を照らし合わせて評価することが大切である"],
+        answer: 0,
+        explanation: "ソーシャルメディア活用の効果は、定量データと定性データの両方から把握し、評価することが大切である。どちらを重視するかはソーシャルメディアの活用目的によるので一概にはいえず、通常はどちらもきちんと把握しておく。"
+    },
+    {
+        id: "c3_q58", type: "exercise", chapter: 3,
+        text: "広告におけるKPIとして用いられるコンバージョン単価 (CPA) の計算式として正しいものは、次のうちどれか",
+        options: ["クリック数 ÷ インプレッション数", "コンバージョン数 ÷ クリック数", "広告費 ÷ クリック数", "広告費 ÷ コンバージョン数"],
+        answer: 3,
+        explanation: "クリック数 ÷ インプレッション数 × 100 = CTR (クリック率)、コンバージョン数 ÷ クリック数 × 100 = CVR (コンバージョン率)、広告費 ÷ クリック数 = CPC (クリック単価)、広告費 ÷ コンバージョン数 = CPA (コンバージョン単価) である。"
+    },
+    {
+        id: "c3_q59", type: "exercise", chapter: 3,
+        text: "近年重視されているトリプルメディアに該当しないメディアは次のうちどれか",
+        options: ["オウンドメディア", "アーンドメディア", "パーソナルメディア", "ペイドメディア"],
+        answer: 2,
+        explanation: "マーケティングで重要な3つのメディアのこと。自社保有のオウンドメディア (owned media)、ソーシャルやクチコミサイトなどのアーンドメディア (earned media)、広告などのペイドメディア (paid media)を指す。"
+    },
+    {
+        id: "c3_q60", type: "exercise", chapter: 3,
+        text: "サービス認知を広める際のコンテンツ作成方針の説明文として正しいものは、次のうちどれか",
+        options: ["ソーシャルメディアなどでの伝搬可能性を考慮した方針を設定するとよい", "自社都合の視点を中心に伝えたいことを提供する", "自社サイトで囲い込むための閉じた情報提供を重視する", "デザインのトーンマナーから必要なコンテンツを導き出す"],
+        answer: 0,
+        explanation: "認知度を高めるためのコンテンツを企画する際は「自社だけでなく閲覧者のメリットになるか」という視点から検討し、自社サイト外の活動も行うとよい。"
+    },
+    {
+        id: "c3_q61", type: "exercise", chapter: 3,
+        text: "コンテンツを企画する際の考え方として、適切でないものは次のうちどれか",
+        options: ["取り上げる内容に関して、基礎知識があるユーザーとないユーザーのどちらが対象かで、文章の書き方、説明の深さなどに気をつける必要がある", "更新を前提とした記事型のコンテンツは、短期間で更新が止まらないよう、あらかじめ掲載する情報やスケジュールを決めておくとよい", "コンテンツはユーザーに必要とされるものと、こちらから提供したいものをバランスよく織り交ぜて企画することが大事である", "WebサイトのコンテンツとテレビCMや雑誌の記事広告と連動させるなど、クロスメディア展開を図ることが必須の時代である"],
+        answer: 3,
+        explanation: "コンテンツのクロスメディア展開はマーケティング戦略上重要な選択肢であるが、そこにユーザーのニーズや企業の戦略的視点がないまま展開しても高い効果は期待できない。"
+    },
+    {
+        id: "c3_q62", type: "exercise", chapter: 3,
+        text: "Webサイト設計に関する次の文章について、空欄に入る言葉の組み合わせとして正しいのは、次のうちどれか\n「目的達成のためにはどのような(ア)が必要で、それらをどのような人々に伝えるか、フロントエンドとバックエンドではどのような技術や (イ)が必要なのか、どのようなサイト (ウ) にすればユーザーが利用しやすいか、といったことを考える」",
+        options: ["ア:システム\nイ: コンテンツ\nウ:構造", "ア: コンテンツ\nイ:構造\nウ:システム", "ア:コンテンツ\nイ:システム\nウ:構造", "ア:構造\nイ:システム\nウ:コンテンツ"],
+        answer: 2,
+        explanation: "Web サイト設計においては、目的達成のためにはどのようなコンテンツが必要で、それらをどのような人々に伝えるか、フロントエンドとバックエンドではどのような技術やシステムが必要なのか、どのようなサイト構造にすればユーザーが利用しやすいか、といったことを考える。"
+    },
+    {
+        id: "c3_q63", type: "exercise", chapter: 3,
+        text: "システムに関して把握すべき事項に当てはまらないものは、次のうちどれか",
+        options: ["Webサーバーの種類を事前に把握することは、無駄なテスト工数を減らすことにつながる", "開発のために使用可能な言語を把握することは、担当者の人選や業務フローの設計に必要である", "スマートフォン用のWebサーバーでは、SWFファイルを置けないものもある", "想定PV数によっては、Webサーバーの変更を迫られるケースも存在する"],
+        answer: 2,
+        explanation: "Web サーバーには原則としてどのようなファイルでも置くことができる。利用できるかどうかは利用者の環境 (ハードウェアやソフトウェア、OSやWeb ブラウザ)による。"
+    },
+    {
+        id: "c3_q64", type: "exercise", chapter: 3,
+        text: "テキストコンテンツの改善ポイントとして、間違っているものは、次のうちどれか",
+        options: ["画面内にすべてのテキストをおさめるために、フォントサイズをかなり小さくした", "段落を適度に分け、行間を広めに設定した", "文字色と背景のコントラストを調整し、可読性を確保した", "ところどころに図表やリストを挿入した"],
+        answer: 0,
+        explanation: "テキストコンテンツの改善ポイントには、適度な段落分けや行間の確保、フォントのサイズや種類の適切な選択、文字色と背景のコントラストへの配慮、図表化・リスト化による訴求力向上などがある。フォントサイズを過度に小さくしてしまうと、可読性が低下してしまう点に注意。"
+    },
+    {
+        id: "c3_q65", type: "exercise", chapter: 3,
+        text: "自社のWebサイトについて、ユーザーから 「文章ばかりでわかりにくい」とのクレームがあった。この問題を解決する方法として間違っているものは、次のうちどれか",
+        options: ["段落分けを適度に行い、行間を広めに設定することで、圧迫感が小さくなるように改善する", "図やリストを適度に入れることで、内容のわかりやすさを向上させると同時に、単調さを防ぐ", "文字サイズをやや大きめにし、フォントの種類を変えることで、読みやすさを向上させる", "背景色をやや濃い色にし、文字色とのコントラストを低くすることで、テキストの存在感が小さくなるように改善する"],
+        answer: 3,
+        explanation: "テキストコンテンツを改善するにあたっては、背景色と文字色のコントラストを保つことが大切である。コントラストを低くしてしまうと、読みやすさが低下するおそれがある。"
+    },
+    {
+        id: "c3_q66", type: "exercise", chapter: 3,
+        text: "Webコンテンツ用のボタンやキービジュアルなどの画像の作成方法について正しいものは、次のうちどれか",
+        options: ["画像編集ツールで、どの画像もGIF形式で作成・保存し、Webコンテンツとして使用する", "画像編集ツールのネイティブファイルなどで画像を作成し、Webコンテンツ用にPNG、JPEGなどの形式で書き出したら、ネイティブファイルは削除する", "画像編集ツールで、どの画像もJPEG形式で作成・保存し、Webコンテンツとして使用する", "画像編集ツールのネイティブファイルなどで保存しておき、Webコンテンツ用にPNG、JPEGなどの形式で書き出す"],
+        answer: 3,
+        explanation: "Web コンテンツ用の画像は、画像編集ツールのネイティブファイルのような汎用性のある形式で保存しておき、画像の性質に合わせて、Webコンテンツ用にGIF、JPEGなどの形式で書き出すのが基本。ネイティブファイルには編集データが保存されているため、別途保存しておくことで、修正の際にゼロから作り直さずに済む。"
+    },
+    {
+        id: "c3_q67", type: "exercise", chapter: 3,
+        text: "写真素材に関する記述として正しいものは、次のうちどれか",
+        options: ["撮影の際、RAW形式で保存されるようにしておくことで、Webサイトで利用する際にページ表示の高速化が図れる", "撮影時に最も気をつけたいのは「手ブレ」であり、どのような状況でも必ず三脚を利用して撮影する", "電子メディアのみでの利用を想定した写真素材は、互換性の高いJPEG形式での関係者への共有が適切である", "RAW現像によって光量不足やブレの問題を解決できるため、撮影時の写真の見た目や品質は気にしなくてよい"],
+        answer: 2,
+        explanation: "電子メディアのみでの利用を想定した写真素材は、互換性の高いJPEG形式での関係者への共有が適切である。RAW形式は生の状態の(現像されていない) データであり、環境によってはプレビューができないなどの問題がある。"
+    },
+    {
+        id: "c3_q68", type: "exercise", chapter: 3,
+        text: "被写界深度を変えることで写真の仕上がりに変更が出る点として正しいものは、次のうちどれか",
+        options: ["ピントの合う範囲", "写真の明るさ", "画角", "解像度"],
+        answer: 0,
+        explanation: "被写界深度は撮影対象においてピントを合わせる長さを指す。被写界深度が浅いと前後の対象物がボケて映ることになり、深いと被写体全体にピントが合う。"
+    },
+    {
+        id: "c3_q69", type: "exercise", chapter: 3,
+        text: "RAW形式で保存しておくことで後から調整が可能となる項目に当てはまらないものは、次のうちどれか",
+        options: ["露出オーバー", "シャッタースピード", "色相", "ホワイトバランス"],
+        answer: 1,
+        explanation: "RAW ファイルは現像前の状態なので、ホワイトバランスや色相、露出などを調整できる。"
+    },
+    {
+        id: "c3_q70", type: "exercise", chapter: 3,
+        text: "動画を不正に利用されないように著作権保護機能を付与したい場合、採用すべきフォーマットとして適切なものは、次のうちどれか",
+        options: ["FLV", "AVI", "WMV", "DivX"],
+        answer: 2,
+        explanation: "WMV はマイクロソフトが開発した動画フォーマットであり、認証サーバーとの連携による著作権保護機能を付与できる。このような仕組みを総称して、デジタル著作権管理 (DRM、Digital Rights Management)という。"
+    }
+];
+// --- 問題データ (後編: 第4章〜第6章) ---
+const quizDataPart2 = [
+    // 第4章
+    {
+        id: "c4_q71", type: "exercise", chapter: 4,
+        text: "Richars Soul Wurman (リチャード・ソウル・ワーマン) が提唱するインフォメーションアーキテクトの定義として間違っているものは、次のうちどれか",
+        options: ["複雑なデータの固有のパターンをまとめ、内容を明確にする人", "運営者が伝えたい情報を豊富な知識で補う人", "第三者が情報を得るための道筋を自分で見つけられるように、情報の構造を示す地図を作成する人", "誰でも理解しやすいように情報を提供し、それらをまとめる人"],
+        answer: 1,
+        explanation: "Richars Soul Wurman (リチャード・ソウル・ワーマン) が提唱するインフォメーションアーキテクトの定義には、「運営者が伝えたい情報を豊富な知識で補う人」は含まれていない。"
+    },
+    {
+        id: "c4_q72", type: "exercise", chapter: 4,
+        text: "Webユーザビリティの改善には、「情報アーキテクチャ」の視点が鍵になるが、その理由として正しいものは、次のうちどれか",
+        options: ["情報設計の必要性は、デザイン制作の途中の工程で発生するため", "視覚要素だけでなく聴覚要素としての構造も重視するため", "表層として見えているものだけではなく、その裏にある機能や仕組みを重視するため", "制作者ではなく、第三者による指摘を重視するため"],
+        answer: 2,
+        explanation: "実際に見えている部分だけではなく、その裏にある機能や仕組みが実は重要であり、情報アーキテクチャではそういった点にも着目しながら、Webユーザビリティの改善に活かす。"
+    },
+    {
+        id: "c4_q73", type: "exercise", chapter: 4,
+        text: "情報アーキテクチャに関する次の文章について、空欄に入る言葉の組み合わせとして正しいものは、次のうちどれか\n「1990年代後半から、開発するWebサイトの規模が巨大化するのに合わせて、欧米の大手Webサイトを中心に、サイトの(ア)ではなく全体構造や機能性、(イ)とユーザーとのインタラクションのあり方の設計、つまり(ウ)の設計に注力するWebならではの新しい分野として注目されだした」",
+        options: ["ア: コンテンツ\nイ:ビジュアルデザイン\nウ:コンテキスト", "ア:コンテキスト\nイ:コンテンツ\nウ:ビジュアルデザイン", "ア:コンテンツ\nイ:コンテキスト\nウ:ビジュアルデザイン", "ア:ビジュアルデザイン\nイ:コンテンツ\nウ:コンテキスト"],
+        answer: 3,
+        explanation: "情報アーキテクチャは、サイトのビジュアルデザインではなく全体構造や機能性、コンテンツとユーザーとのインタラクションのあり方の設計、つまりコンテキストの設計に注力する Web ならではの新しい分野として、1990年代後半から注目されだした。このような設計の役割を担うのが、インフォメーションアーキテクトである。"
+    },
+    {
+        id: "c4_q74", type: "exercise", chapter: 4,
+        text: "インフォメーションアーキテクトという役割において、特に直接関係がないと考えられるスキルは、次のうちどれか",
+        options: ["顧客とのコミュニケーション能力と調整力", "デザインマネジメント力", "サーバーやプログラムの運用力", "ユーザー調査結果の分析力"],
+        answer: 2,
+        explanation: "情報アーキテクチャの作業とは、必要な情報をユーザにとって最適な形で再構成し、その情報をなぜその形で再構成すべきかを相手に理解させ、必要に応じて調整し続けることである。そのため、調整力が最も重要であり、さらに、デザインをトータルでマネジメントする力やユーザーテストの分析力なども重要なスキルである。"
+    },
+    {
+        id: "c4_q75", type: "exercise", chapter: 4,
+        text: "ユーザー体験デザインの基本思想の説明として不適切なものは、次のうちどれか",
+        options: ["利用する際の体験の中で生じる感情なども考慮した、プロセス重視の観点である", "ユーザビリティよりも狭義の概念として登場している", "利用者本人が気づいていなかった本当に必要なタスクを引き出すことで、発注者のビジネス目的を達成することも含まれる", "アクセスのしやすさや信頼性なども含む総合的な価値を考えることである"],
+        answer: 1,
+        explanation: "ユーザー体験デザインは、ユーザビリティやビジュアルデザインのベースとなる、いっそう広い概念である。"
+    },
+    {
+        id: "c4_q76", type: "exercise", chapter: 4,
+        text: "Webサイトにおけるユーザビリティの徹底が工業製品などに比べて複雑な理由として正しいものは、次のうちどれか",
+        options: ["工業製品と比べて利用者の数が多いから", "工業製品と異なり、実体のないプログラムだから", "工業製品と異なり、ユーザーが多様な目的で同じ場所を訪れるから", "工業製品と比べて多様な時間に用いられるから"],
+        answer: 2,
+        explanation: "Webサイトは「特定目的を果たすための物」という側面だけでなく、「場」や「空間」という側面を持つ。Webサイトは訪問したユーザーごとに期待するもの、見え方、使い方が異なる。そのため、訪問したユーザーがどのような行動をするかを想定し、ユーザーが行動しやすい空間として計画的に設計する必要がある。"
+    },
+    {
+        id: "c4_q77", type: "exercise", chapter: 4,
+        text: "ユーザー体験デザインとは無関係と考えられるのは、次のうちどれか。",
+        options: ["消費者が日常的に扱うデバイスの変化", "最新技術の利用を最優先で考えること", "ひとつの施策が生み出す矛盾や、施策同士のカニバリズム (共食い) への配慮", "Webマーケティング手法の発達による、ユーザーターゲティングの精緻化"],
+        answer: 1,
+        explanation: "ユーザー体験デザインでは、最新技術の利用を最優先で考えることは、必ずしも求められない。むしろ、最新技術を使い、今までにないようなインターフェースを実装したものの、利便性や信頼性などの設計配慮が欠けているケースが少なくない。"
+    },
+    {
+        id: "c4_q78", type: "exercise", chapter: 4,
+        text: "ペルソナ手法の説明として相応しくないものは次のうちどれか",
+        options: ["定量調査や定性調査のデータなどを参考にし、典型的なユーザーを抽出する手法", "Webサイトの導線設計や機能設計にユーザーのニーズを反映させる手法", "企画や設計段階でユーザーの行動心理や要件を明確にする手法", "例えば「30代後半の都会に住む女性」といったターゲットユーザーを明らかにする手法"],
+        answer: 3,
+        explanation: "ペルソナ手法では、定量調査や定性調査などのデータを生かしながら、具体的な顧客像を明確にする。「30代後半の都会に住む女性」というのはユーザー層に過ぎず、顧客像を詳細に設定するペルソナ手法とは異なる。"
+    },
+    {
+        id: "c4_q79", type: "exercise", chapter: 4,
+        text: "カスタマージャーニーマップで記述するべき内容としてもっとも適切でないものは、次のうちどれか",
+        options: ["マーケット", "ユーザーの感情", "場所やチャネル", "行動"],
+        answer: 0,
+        explanation: "カスタマージャーニーマップではオンラインとオフライン、デバイスの種類などを問わず、顧客とのさまざまなタッチポイントと、そこで生じる思考、感情の起伏などを明らかにする。マーケットのようなマクロ視点での検討は別のプロセスで実施される。"
+    },
+    {
+        id: "c4_q80", type: "exercise", chapter: 4,
+        text: "外部サイトからの引用や被リンクが期待される用語集のようなサイトで採用すべき構造化モデルについて、明らかに適していないと考えられるものは、次のうちどれか",
+        options: ["直線型の構造化モデル", "階層型の構造化モデル", "リンク型の構造化モデル", "フォークソノミー型の構造化モデル"],
+        answer: 0,
+        explanation: "直線型は、問い合わせやアンケートなどの入力フォームのようなコンテンツの構造化に向く。用語集にこの構造化モデルを用いてしまうと、関連する他の情報への遷移がしづらく、外部からの引用や被リンクでユーザーが訪問した後の行動をイメージすることは困難である。"
+    },
+    {
+        id: "c4_q81", type: "exercise", chapter: 4,
+        text: "Webサイト制作において、情報の構造化が重要な理由としてもっとも正しいものは、次のうちどれか",
+        options: ["ユーザーの理解しやすさを向上させるから", "制作作業の短縮に直結するから", "ページ数を少なくできるから", "情報の網羅性を高いレベルで達成できるから"],
+        answer: 0,
+        explanation: "情報の組織化において「正しいサイト構造」を明確に定義づけることはできない。強いて言えば、どれだけユーザー視点で組織化と構造化を行うか (ユーザー中心設計)に尽きる。つまり、ユーザーの理解度や利便性の向上のために情報の構造化を行うことが大切である。"
+    },
+    {
+        id: "c4_q82", type: "exercise", chapter: 4,
+        text: "ハイレベルサイトマップを用いることによる作業進行上のメリットとして正しいものは、次のうちどれか",
+        options: ["設計段階から詳細なコンテンツボリュームを把握することができるので、リソースの確保がしやすい", "設計段階でサイトの全体像について関係者間の意思疎通が図りやすくなる", "実装される機能が細かく明記されているので、要件の洗い出しが容易に行える", "トップページから個々のページへの導線設計が網羅的に記述されているので、制作のゴールが明確にわかる"],
+        answer: 1,
+        explanation: "設計段階でコンテンツの骨格を関係者間で共有し、意識をすり合わせられることが、ハイレベルサイトマップの最大のメリットである。"
+    },
+    {
+        id: "c4_q83", type: "exercise", chapter: 4,
+        text: "ハイレベルサイトマップを作る際のポイントとして当てはまらないものは、次のうちどれか",
+        options: ["サイトに掲載するすべての情報をカバーし、要約や注釈を添えるなどして充実させる", "マインドマップやアウトラインプロセッサで整理するのもよい方法である", "グローバルナビゲーションレベルに位置づけられる上位階層を視覚的にわかりやすくまとめる", "付箋をホワイトボードや壁に貼り、全体を見渡せるようにして検討するとよい"],
+        answer: 0,
+        explanation: "ハイレベルサイトマップは一般的に、グローバルナビゲーションレベルに位置づけられる上位階層を視覚的にわかりやすくまとめたものである。関係者のミーティングなどで検討する際は、付箋をホワイトボードや壁に貼り、全体を見渡せるようにするとよい。また、サイトマインドマップやアウトラインプロセッサで整理するのもよい方法である。"
+    },
+    {
+        id: "c4_q84", type: "exercise", chapter: 4,
+        text: "詳細サイトマップの目的から考えた場合、特に必須とは考えらない項目は次のうちどれか",
+        options: ["ページディスクリプション", "ページ名称", "ディレクトリパス", "ファイルタイプ/ファイル名"],
+        answer: 0,
+        explanation: "詳細サイトマップの各項目では、ページ名称、ページID、ディレクトリパス、ファイルタイプ/ファイル名を示しておくとよい。記述的な内容であるページディスクリプション(説明文)は、必須とはいえない。"
+    },
+    {
+        id: "c4_q85", type: "exercise", chapter: 4,
+        text: "詳細サイトマップで明らかにすることについて、もっとも適していないものは次のうちどれか",
+        options: ["ページレベルのサイト構成", "ページごとに含まれる情報要素", "特定のページを区別するための名称", "あるページがどの階層に属するか"],
+        answer: 1,
+        explanation: "ページごとにどのような情報要素を含めるかは、詳細サイトマップでは必ずしも明らかにならないケースが多く、ワイヤーフレームで明らかにするのが一般的である。"
+    },
+    {
+        id: "c4_q86", type: "exercise", chapter: 4,
+        text: "クライアント担当者から、Webページで企業ロゴを配置する場所について相談をされた。通常のWebデザインやユーザビリティを踏まえた適切な回答は、次のうちどれか",
+        options: ["グローバルナビゲーションの一番右に配置する", "ページ最下部の中央に配置する", "ページ全体の左上に配置する", "必ず問い合わせボタンの近くに配置する"],
+        answer: 2,
+        explanation: "企業ロゴは通常、ページ全体の左上に配置し、クリックするとホーム (トップページ)に戻るようにリンクを設定する。ページの左上以外に配置する可能性もあるが、その場合はいっそう明確な理由や、デザイン上の優位点が求められるので注意する。"
+    },
+    {
+        id: "c4_q87", type: "exercise", chapter: 4,
+        text: "パンくずナビゲーションの説明として間違っているものは、次のうちどれか",
+        options: ["コンテンツエリアの上など、すべてのページで同じ位置に表示するのが一般的", "グリム童話の「ヘンゼルとグレーテル」で、森の中で帰り道に迷わないようにと、主人公がパンくずを少しずつと落として歩いたエピソードに由来している", "コンテンツエリア内で文脈に合わせてページ固有のナビゲーションとして表現されるもの", "ユーザーの現在地やコンテンツの階層構造を不等号記号などで深掘りする形式で表現したもの"],
+        answer: 2,
+        explanation: "パンくずナビゲーションは、ユーザーの現在地やコンテンツの階層構造を不等号記号などで深掘りする形式で表現したもの。コンテンツエリアの上など、すべてのページで同じ位置に表示するのが一般的。グリム童話の「ヘンゼルとグレーテル」が由来である。"
+    },
+    {
+        id: "c4_q88", type: "exercise", chapter: 4,
+        text: "Webサイトのナビゲーションシステムが達成すべき目的として間違っているものは次のうちどれか",
+        options: ["それぞれの移動手段 (リンク)がどのような優先順位にあるかを示す", "ユーザーに対してある地点から別の地点への移動手段 (リンク)を適切に提供する", "ユーザーが現在見ているページ (現在地)と目的としているページ (目的)との関係性を示す", "画面遷移などのページ間移動の際に、新しい視覚表現を積極的に提供する"],
+        answer: 3,
+        explanation: "新しい視覚表現を取り入れることでユーザー体験が高まることもあるが、あくまでナビゲーションシステムの最大の目的は、ユーザーをいかに迷うことなく目的の情報(コンテンツ)に誘導するかであり、そのために必要な役割を果たすことが大切である。"
+    },
+    {
+        id: "c4_q89", type: "exercise", chapter: 4,
+        text: "ユーザーインターフェイス設計に関する用語について間違った説明は、次のうちどれか",
+        options: ["パララックスとは視差効果のことであり、スクロールに応じてコンテンツ要素やデザインが動的に変化する表現を指す", "グラフィカルとは記述的や叙述的な表現のことであり、言語表現によってインターフェイスの機能や状態を伝えることである", "メタファーとは隠喩や暗喩を意味し、現実世界に存在するものをアイコンやボタンに置き換えたり、立体感や影をつけるなどの表現が該当する", "インタラクションとは相互作用のことであり、2つ以上の存在が双方向の対話やコミュニケーションを起こすことを指す"],
+        answer: 1,
+        explanation: "グラフィカルとは、辞書的な意味では「絵画的」や「彫刻的」なものを意味する。一般には、アイコンやピクトグラムに代表されるように、言語ではなく非言語的な表現を指し、GUI (グラフィカルユーザーインターフェイス) にも含まれる言葉である。"
+    },
+    {
+        id: "c4_q90", type: "exercise", chapter: 4,
+        text: "ワイヤーフレームを制作する際の注意点として正しいものは次のうちどれか",
+        options: ["見た目が寂しくならないように、写真や画像などのビジュアルを用意し、随所に配置する", "多様なユーザーのニーズに応えるため、できるだけたくさんの情報要素に配置する", "Webサイトに含めるすべてのページ分を作成する", "オブジェクトの色づかいはグレースケールにし、テキストの一部や大部分はダミーでもよい"],
+        answer: 3,
+        explanation: "ワイヤーフレームは、レイアウトやコンテンツを作り込む前に、情報要素の確認を行う目的で作成する。Webサイトに含めるすべてのページ分を作る必要はなく、オブジェクトの色づかいはグレースケールにし、テキストの一部や大部分はダミーでもよい。"
+    },
+    {
+        id: "c4_q91", type: "exercise", chapter: 4,
+        text: "プロトタイプの説明として間違っていると考えられるのは、次のうちどれか",
+        options: ["Webサイトの完成品を指す", "プロセス重視の観点で検証される", "画面遷移などを通じて、操作やインタラクションの効果を検討できる", "新しい技術を導入する場合などに、早期に実現可能性が判断できる"],
+        answer: 0,
+        explanation: "プロトタイプは「Web サイトの試作品」のことである。ワイヤーフレームはユーザーが目的を達成できるかという「タスク重視」の観点であるに対し、プロトタイプは数ページ分の体験を通して肯定的な印象を抱いてもらえるか、操作性はどうかという「プロセス重視」の観点で用意する。"
+    },
+    {
+        id: "c4_q92", type: "exercise", chapter: 4,
+        text: "制作仕様書に含める内容の説明として不適切なものは、次のうちどれか",
+        options: ["デザインガイドラインには、レイアウトグリッドやカラム、カラースキーム、タイポグラフィなどの設定に関するルールを含める", "コーディングガイドラインには、開発を行うテストサーバーへのアクセス方法、サーバーやデータベースの種類やバージョン、CMSなどの設置や運用上のルールを含める", "アクセシビリティガイドラインには、国内や国際的なガイドラインに基づいた内容を含めるのが一般的であり、達成すべき準拠レベル、制作時のポイント、チェックリストなどを含める", "納品・検品規定には、Webサイトに関するファイルの納品方法、素材一覧や仕様書などの添付ドキュメント、その他の特記事項などを含める"],
+        answer: 1,
+        explanation: "コーディングガイドラインは、HTMLやCSSの記述方法をまとめたものである。HTMLやCSSのバージョンや文字コード、タイトル、メタ情報の指定方法、IDやクラスの命名規則、ソースコードの記述方法などを含める。"
+    },
+
+    // 第5章
+    {
+        id: "c5_q93", type: "exercise", chapter: 5,
+        text: "インターネットの普及以降のユーザー行動として知られるAISCEASについて、不適切と考えられる説明は、次のうちどれか",
+        options: ["インターネットが情報探索だけでなく、誰もが情報発信できる場として成熟したことが、大きな理由のひとつである", "企業が発信する製品情報だけでなく、ブログやソーシャルメディアでのクチコミやレビューを参考に、比較検討ができるようになった", "AISCEASに含まれる2つのSは 「Safety」と「Satisfaction」であり、一連の消費行動における安全性と満足感の提供が重要である", "その製品に注目を集めたり、興味を喚起することは、これまでマスメディアが大きな役割を果たしてきたが、インターネット広告もその役割を担うようになってきている"],
+        answer: 2,
+        explanation: "AISCEAS に含まれる2つのSは「Search」と「Share」である。「検索」と「情報共有」というインターネットメディアの存在価値を支える、非常に重要な要素である。"
+    },
+    {
+        id: "c5_q94", type: "exercise", chapter: 5,
+        text: "現在のユーザーの情報取得行動について間違っているものは次のうちどれか",
+        options: ["インターネットを通じた購買行動の最終的な決定要因はソーシャルフィルタリングのみといわれており、そのためにはオーソリティ (権威) による重み付けが最も重要である", "インターネット上の交流活動などによって蓄積された関係性であるソーシャルグラフに基づき、自身に関連度の高い情報を取得している", "ユーザーごとに行動履歴や情報のフィルターが異なるため、同一サイトの同一ページを見ていても、同一の情報が表示されるとは限らない", "単独の情報によらず、あらゆるところから情報を受け取る体制を作り、その膨大な情報から自分に適した情報を取捨選択する時代である"],
+        answer: 0,
+        explanation: "インターネット上の無数の情報源から、そのユーザーのこれまでの行動履歴などから自動的に重み付けや精査を行うことをソーシャルフィルタリングという。ソーシャルフィルタリングに基づく情報が、購買行動の最終的な決定要因となることはあるが、必ずしもそれだけではなく、マスメディアの情報やリアルの会話なども決定要因となりうる。"
+    },
+    {
+        id: "c5_q95", type: "exercise", chapter: 5,
+        text: "Webマーケティングの説明として正しいものは、次のうちどれか",
+        options: ["会員サイトの運営は、既存顧客との関係維持よりも、新規顧客の獲得を目的とした施策である", "既存顧客との関係性を維持するために最も有効な施策は、SEOである", "アフィリエイトの利用は、広報活動の中でも重要な施策のひとつとなっている", "オウンドメディアは新規顧客の獲得のみならず、既存顧客との関係維持の役割をも果たす"],
+        answer: 3,
+        explanation: "Webマーケティングにおいては、新規顧客獲得と既存顧客獲得の両方が重要だが、この両方を目的とした施策としてはオウンドメディアやキャンペーンサイトなどが挙げられる。"
+    },
+    {
+        id: "c5_q96", type: "exercise", chapter: 5,
+        text: "クライアント企業から、既存顧客の中でターゲットとしたいセグメントにダイレクトに情報を届けたいと依頼された。その際、最適と思われる広告手法の組み合わせは、次のうちどれか",
+        options: ["大手ポータルサイトのバナー広告と問い合わせフォーム", "動画広告とディスプレイ広告", "記事広告と資料ダウンロード", "メール広告とランディングページ"],
+        answer: 3,
+        explanation: "まず、既存顧客の中でターゲットとしたいセグメントを抽出し、実際に情報を届けるには、メールという手段が最も確実である。また、情報を届けたあとのアクション(資料請求、購入、申し込みなど) を促すには、ランディングページを用意するのが適切である。"
+    },
+    {
+        id: "c5_q97", type: "exercise", chapter: 5,
+        text: "リスティング広告の出稿や運用に関する一般的な戦術として間違っているものは、次のうちどれか",
+        options: ["ビジネスの対象範囲にあわせて、配信地域を設定する", "広告によっては、モバイルにより多く配信されるように入札単価を調整する", "投資効果を最大化するために、キーワードごとに入札単価を設定する", "キーワード入札の自動化は行わず、ひとつずつ入札単価を決める"],
+        answer: 3,
+        explanation: "リスティング広告のキーワード入札の自動化は、効率的な広告運用のために広く利用されている機能である。Google AdWords を例にすると、クリック数の最大化、コンバージョン数の最大化、検索ページの目標掲載位置といった自動入札機能が利用できる。"
+    },
+    {
+        id: "c5_q98", type: "exercise", chapter: 5,
+        text: "ソーシャルメディアが企業のマーケティング手段として広く利用されている。その理由として間違っているものは、次のうちどれか",
+        options: ["ユーザーと直接対話し、よりよい関係を築くためのツールとして活用できるため", "ソーシャルメディアごとに、ユーザー層や場の雰囲気に合わせた情報発信を行うことで、企業の魅力を多面的にアピールできるため", "ソーシャルメディアではポジティブな投稿しか認められていないため、企業のよい面をユーザーに知ってもらえるため", "ユーザーはソーシャルメディアでの活動に多くの時間を割いているため、そこで企業の存在感を示すことが大切であるため"],
+        answer: 2,
+        explanation: "ソーシャルメディアは個人同士の交流の場であるが、企業が一参加者として受け入れられ、ユーザーと交流するケースも多くなってきている。ただし、企業のコンプライアンスやブランディング活動とのバランスを考慮し、企業を代表する発言や行動としてふさわしいか、という視点で活用することが大切である。"
+    },
+    {
+        id: "c5_q99", type: "exercise", chapter: 5,
+        text: "SEO(検索エンジン最適化) の取り組みに関する正しい説明は、次のうちどれか",
+        options: ["同一のキーワードを大量に記述したり、それらのテキストを隠すことで、検索結果での順位を上げようとすること", "HTMLタグの意味を考えずに、文字の大きさや色などの見栄えを最優先にしてページを制作することで、検索エンジンからの評価を高めること", "Webサイトをわかりやすい構造にしたり、HTMLタグを適切に用いてページを制作し、検索エンジンがWebサイトやページの状態を正しく認識できるようにすること", "検索エンジンのデータベースにアクセスし、自社サイトのデータを編集・管理することで、検索結果での順位を上げようとすること"],
+        answer: 2,
+        explanation: "SEOは「Search Engine Optimization」の略。特定のキーワードでの検索結果での上位表示も目標のひとつとなりうるが、検索エンジンスパム (SEO スパム) によってそれを果たそうとすることは禁止されている。Web サイト全体をわかりやすい構造にし、各ページではHTMLタグを適切に用いることで、検索エンジンが構造やコンテンツを正しく認識できるようにすることが、SEOの基本である。"
+    },
+    {
+        id: "c5_q100", type: "exercise", chapter: 5,
+        text: "Googleはアルゴリズムのアップデートを頻繁に行っている。ここ数年のアップデートによって、特にネガティブな影響を受けないと考えられるサイトは、次のうちどれか",
+        options: ["Googleのガイドラインに反しているサイト", "独自性と専門性の低いサイト", "HTMLを動的に生成するサイト", "モバイル閲覧に適切に対応していないサイト"],
+        answer: 2,
+        explanation: "Googleは、インターネット環境やユーザー行動の変化に応じて、ペンギン・アップデートやパンダ・アップデート、モバイル・フレンドリー・アップデートなどの大幅なアルゴリズム変更を次々と実施している。HTMLをプログラムなどで動的に生成するサイトは、アルゴリズム変更によるネガティブな影響を特に受けないと考えられる。"
+    },
+    {
+        id: "c5_q101", type: "exercise", chapter: 5,
+        text: "SEOとSSLの関係を間違って説明しているものは、次のうちどれか",
+        options: ["WebサイトをHTTPS化することで、検索順位の決定上、有利に扱われる可能性がある", "HTTPSサイトはHTTPサイトよりも、ユーザーが安全に利用できる環境を提供できるため、ユーザー体験の質が高まる", "HTTPS化によって、GoogleによるWebサイトの再評価が行われると考えられ、Google Search ConsoleでもHTTPSに変更後のURLでの再登録が必要である", "HTTPS化にあたっては、コンテンツの大幅な再編集や追加制作が必要になるため、慎重な判断が求められる"],
+        answer: 3,
+        explanation: "近年、検索エンジンは Web サイトのHTTPS化(常時SSL化)を推奨している。ユーザーのプライバシー保護や通信の安全性向上が目的といわれ、すでにランキングアルゴリズムの要素に加えられている。基本的に、HTTPS化はコンテンツそのものには影響がなく、大幅な再編集や追加制作の必要はない。"
+    },
+    {
+        id: "c5_q102", type: "exercise", chapter: 5,
+        text: "A/Bテストに関する説明として正しいものは、次のうちどれか",
+        options: ["動線設計を改善するための取り組みである", "改善できるのは広告のCTRのみである", "広告文、広告の配信設定、着地ページのコンテンツなど、さまざまな段階で実施できる", "効果検証にあたって、アクセス解析ツールは特に必要ない"],
+        answer: 2,
+        explanation: "A/Bテストは例えば2つの広告を用意し、どちらのほうがクリック数が多かったか(またはクリック率が高かったか)を判定する方法。CTR (クリック率)だけでなく、着地ページのコンテンツなど、さまざまな課題の改善に役立てることができる。"
+    },
+    {
+        id: "c5_q103", type: "exercise", chapter: 5,
+        text: "広告からの着地ページの直帰率を改善するという課題に対して、有効とは考えられない方法は、次のうちどれか",
+        options: ["ユーザーがどのような行動を起こせばよいかを明確に示す", "広告の出稿キーワードの種類を増やし、ニーズを幅広くつかまえる", "CTA (Call To Action) エリアをページの下部だけではなく、上部や途中にも設置する", "広告文が着地ページの内容ときちんと合っているかどうかを確認し、修正する"],
+        answer: 1,
+        explanation: "広告の出稿キーワードの種類を増やし、ニーズを幅広くつかまえることは、着地ページの直帰率の改善にはつながらず、直帰率を高めてしまうと考えられる。むしろ、出稿キーワードの種類を絞ったほうが、直帰率の改善に効果がある。"
+    },
+    {
+        id: "c5_q104", type: "exercise", chapter: 5,
+        text: "EFO(入力フォーム最適化)に関する次の文章について、空欄に入る言葉の組み合わせとして正しいものは、次のうちどれか\n「入力フォームは、Webサイトを通じたさまざまな(ア)の要となるユーザーインターフェイスである。スマートフォンなどタッチデバイス向けのインターフェイス設計では、タップ可能な要素のサイズは(イ)以上にするのが一般的である。これは(ウ)で示されている基準である。」",
+        options: ["ア: コンバージョン\nイ:44ピクセル\nウ:iOSヒューマンインターフェイスガイドライン", "ア: コンバージョン\nイ:88ピクセル\nウ:iOSヒューマンインターフェイスガイドライン", "ア: コンバージョン\nイ:44ピクセル\nウ: マテリアルデザインガイドライン", "ア:ログイン\nイ:88ピクセル\nウ: マテリアルデザインガイドライン"],
+        answer: 0,
+        explanation: "入力フォームは、Webサイトを通じたさまざまなコンバージョンの要となるユーザーインターフェイスである。スマートフォンなどタッチデバイス向けのインターフェイス設計では、タップ可能な要素のサイズは44ピクセル以上にするのが一般的である。これはApple 社の「iOS ヒューマンインターフェイスガイドライン」で示されている基準である。"
+    },
+    {
+        id: "c5_q105", type: "exercise", chapter: 5,
+        text: "ECサイトでの個人情報の入力フォームを最適化するにあたり、現在のテクノロジーや適切な運用実務に照らして実現可能なことは、次のうちどれか",
+        options: ["未入力項目を自動的に補完する", "漢字を入力した際にふりがなを自動入力する", "確認画面を省略して送信を完了させる", "数字キーだけですべての項目の入力を完了させる"],
+        answer: 1,
+        explanation: "漢字を入力した際のふりがなの自動入力はJavaScript などで実現可能である。なお、ユーザーに確認画面を提示し、入力内容を確認・修正する機会を提供することは、電子契約法で定められている点に注意。"
+    },
+    {
+        id: "c5_q106", type: "exercise", chapter: 5,
+        text: "リテンションマーケティングのポイントとして間違っているものは、次のうちどれか",
+        options: ["既存顧客との関係を維持していくためのマーケティング施策である", "一般的に、新規顧客を1人獲得するよりも、既存顧客を1人維持するコストのほうが高いといわれている", "顧客をステージに分け、それぞれ別の施策を行い、良質の顧客に育ってもらうことが大切である", "リテンションマーケティングでは、ユーザーから得られる生涯価値に注目する"],
+        answer: 1,
+        explanation: "新規顧客を1人獲得するのに必要なコストは、既存顧客を1人維持するコストの5倍といわれている。市場開拓が容易ではない成熟経済においては特に、既存顧客との関係を維持するためのリテンションマーケティングが重要である。"
+    },
+    {
+        id: "c5_q107", type: "exercise", chapter: 5,
+        text: "代表的なアクセス解析ツールである 「Googleアナリティクス」の説明として間違っているものは、次のうちどれか",
+        options: ["通常は無償で使えるが、有償プランも利用できる", "Webサイト、iOSアプリ、Androidアプリに導入できるが、任意の情報端末には導入できない", "Google AdWordsやGoogle Search Console と連携できる", "開発者向けのAPIが提供されている"],
+        answer: 1,
+        explanation: "Google アナリティクスは無償のアクセス解析ツールであるが、トラフィックが膨大なサイトなどは有償プランを利用する。Webサイト、iOSアプリ、Android アプリのほか、任意の情報端末にも導入可能である。また、開発者向けのAPI が提供されており、独自のプログラムとの連携も可能である。"
+    },
+    {
+        id: "c5_q108", type: "exercise", chapter: 5,
+        text: "Webサイトのデザインやコンテンツの魅力に遜色はなく、ページビュー数やユニークユーザー数は目標値を上回っているが、直帰率が思ったよりも高いページがある。その原因として考えられるものは、次のうちどれか",
+        options: ["グローバルナビゲーション項目が適切ではない", "関連コンテンツへの動線が不足している", "プロモーション活動が充分ではない", "ラベリングが全体的にわかりにくい"],
+        answer: 1,
+        explanation: "直帰率は、Web サイト内のある1ページだけを見て、他のサイトに移動してしまう率である。よくある原因に、関連コンテンツへの動線が不足していることがある。例えば、記事ページであれば、コンテンツの最後で関連記事へのリンクを示すことで、直帰率が下がる可能性が大きく高まる。"
+    },
+    {
+        id: "c5_q109", type: "exercise", chapter: 5,
+        text: "タグ管理ツールのメリットに該当しないものは、次のうちどれか",
+        options: ["コンバージョンを設定する必要がなくなる", "タグが一元管理できる", "ページ表示速度の向上が期待できる", "Web担当者の管理負荷が軽減できる"],
+        answer: 0,
+        explanation: "タグ管理ツールの利用には、タグの一元管理、ページ表示速度の向上、Web 担当者の管理負荷の軽減といったメリットがある。広く利用されている無償サービスには「Googleタグマネージャー」 と 「Yahoo! タグマネージャー」がある。"
+    },
+    {
+        id: "c5_q110", type: "exercise", chapter: 5,
+        text: "マーケティングオートメーションの活動のひとつであるリードクオリフィケーションに関する以下の文章について、空欄に当てはまる言葉の組み合わせとして正しいものは、次のうちどれか\n「営業活動を行うべき見込み顧客を(ア)することを指す。判断基準としては、顧客の属性や接点などに照らした(イ)や、行動に対する点数付けを行う(ウ)の2つが代表的である」",
+        options: ["ア:選別\nイ:トラッキング\nウ:リードスコアリング", "ア:創出\nイ:セグメンテーション\nウ:リードスコアリング", "ア:創出\nイ:セグメンテーション\nウ:リードジェネレーション", "ア:選別\nイ:セグメンテーション\nウ: リードスコアリング"],
+        answer: 3,
+        explanation: "リードクオリフィケーションは、営業活動を行うべき見込み顧客を選別することを指す。判断基準としては、顧客の属性や接点などに照らしたセグメンテーションや、行動に対する点数付けを行うリードスコアリングの2つが代表的である。"
+    },
+
+    // 第6章
+    {
+        id: "c6_q111", type: "exercise", chapter: 6,
+        text: "サーバーの構成に関する以下の図について、空欄(ア)(イ)(ウ)(エ)に当てはまる言葉の正しい組み合わせは、次のどれか。",
+        image: "q111.png", // ★ 画像ファイルのパス指定[cite: 1]
+        options: ["ア: Webサーバー\nイ: FTPサーバー\nウ: DNSサーバー\nエ: SMTPサーバー", "ア: SMTPサーバー\nイ: Webサーバー\nウ: DNSサーバー\nエ: FTPサーバー", "ア: Webサーバー\nイ: SMTPサーバー\nウ: DNSサーバー\nエ: FTPサーバー", "ア: FTPサーバー\nイ: Webサーバー\nウ: DNSサーバー\nエ: SMTPサーバー"],
+        answer: 2,
+        explanation: "（ア）ApacheなどはWebサーバー、（イ）sendmailなどはメールサーバー（SMTP/POP/IMAP）、（ウ）BINDなどはDNSサーバー、（エ）vsftpdなどはFTPサーバーです。"
+    },
+    {
+        id: "c6_q112", type: "exercise", chapter: 6,
+        text: "インターネット広告費の算出方式のひとつである 「PPC」の説明として正しいのは、次のどれか。",
+        options: ["ユーザーに広告が表示された回数に応じて費用が発生する方式", "ユーザーがコンバージョンを達成した際に費用が発生する方式", "ポータルサイトやニュースサイトで記事として広告が配信されたときに費用が発生する方式", "ユーザーが広告をクリックするごとに費用が発生する方式"],
+        answer: 3,
+        explanation: "PPCはPay Per Click（クリック課金）の略称であり、ユーザーが広告をクリックするごとに費用が発生する方式を指します。"
+    },
+    {
+        id: "c6_q113", type: "exercise", chapter: 6,
+        text: "ユーザーがWebブラウザを通じてWWWを利用する状況について、間違っていると考えられる説明は、次のどれか。",
+        options: ["クライアントコンピュータにあるWebブラウザは、ユーザーからのURLリクエストに応じて、Webサーバーにアクセスし、HTMLなどの情報を取得する", "Webブラウザが、送られてきたHTML文書の構造を解析し、テキストや画像を配置、表示していく処理のことを「ポストプロセス」と呼ぶ", "Webブラウザによっては、FlashのようなインタラクティブコンテンツやPDFなどの特殊なドキュメントを表示するために、プラグインのインストールが必要なケースがある", "Webサーバーは基本的にクライアントコンピュータのWebブラウザからの要求を処理した後、通信を切断するが、この通信方式をステートレス方式と呼ぶ"],
+        answer: 1,
+        explanation: "HTML文書の構造を解析し画面に描画・配置・表示していく処理は「レンダリング（Rendering）」と呼びます。「ポストプロセス」ではありません。"
+    },
+    {
+        id: "c6_q114", type: "exercise", chapter: 6,
+        text: "インターネットの普及を大きく前進させるきっかけとなったOSは、次のどれか。",
+        options: ["Mac OS X", "Windows 98", "Windows 95", "Linux"],
+        answer: 2,
+        explanation: "1995年に発売されたWindows 95は、標準でダイヤルアップネットワークやWebブラウザ（Internet Explorer）を備え、一般家庭におけるインターネット爆発的普及の大きなきっかけとなりました。"
+    },
+    {
+        id: "c6_q115", type: "exercise", chapter: 6,
+        text: "DNSに関する説明として正しいのは、次のどれか。",
+        options: ["インターネット上に置かれているデータの場所を示したもの", "ネットワークにつながれたコンピュータに一意に割り振られた、12桁からなる数字の組み合わせ", "サーバーに対して特定のサービスの要求を行い、その提供を受けるようなコンピュータやアプリケーションソフトウェア", "IPアドレスを人間にとって分かりやすい文字列に変換する仕組み"],
+        answer: 3,
+        explanation: "DNS（Domain Name System）は、数字で構成されるIPアドレスと、人間が理解しやすいドメイン名（例: example.com）を相互に変換（名前解決）する仕組みです。"
+    },
+    {
+        id: "c6_q116", type: "exercise", chapter: 6,
+        text: "スマートフォンやタブレットなどモバイル端末でのブラウジングを想定したWebサイト制作について、誤りと考えられる説明は次のどれか。",
+        options: ["スマートフォンは、パソコンと比べて画面が小さい、移動中にも閲覧や操作がなされる、通信速度が遅い環境もありうる、といった特徴がある", "タブレットはパソコン並みの画面解像度を備えた端末が多いため、通常はパソコン向けと同じビジュアルデザインやユーザーインターフェイスを提供する", "レスポンシブWebデザインとは、パソコンとタブレットなど比較的大きな画面向けのWebサイトと、スマートフォン向けのサイトを別々に提供する方法である", "ユーザーエージェント分岐とは、サーバー側またはJavaScriptで、デバイスの種類やブラウザ名をもとに処理を変える方法である"],
+        answer: 2,
+        explanation: "レスポンシブWebデザインは、1つのHTMLソースでCSSのメディアクエリ等を使い、画面幅に応じてレイアウトを動的に変化させる手法です。デバイスごとに「別々にWebサイトを作成して提供する」手法ではありません。"
+    },
+    {
+        id: "c6_q117", type: "exercise", chapter: 6,
+        text: "多様化するブラウジング環境に関する説明として不適切なのは、次のどれか。",
+        options: ["スマートフォンにはパソコンと同等のWebブラウザが搭載されている", "SNSのスマートフォンアプリの多くでは、投稿内容に含まれるURLをタップすると、アプリが切り替わることなく、そのページが表示され、自由に操作できる", "アクセス解析ツールであるGoogleアナリティクスでは、iPhoneの標準ブラウザであるSafariからのアクセスは「WebKit」、アプリ内で立ち上がったSafariからのアクセスは「Gecko (in-app)」と記録され、別々に把握できる", "ウェアラブルデバイス、車載端末、家電製品などからのブラウジングがますます一般的になると予想される"],
+        answer: 2,
+        explanation: "選択肢3の記述は技術的に不正確です。アプリ内ブラウザであってもWebKit系エンジンが使われることが多く、「Gecko (in-app)」という形式で識別されるわけではありません。"
+    },
+    {
+        id: "c6_q118", type: "exercise", chapter: 6,
+        text: "インターネットの問題点に関する説明として正しいのは、次のどれか。",
+        options: ["セキュリティホールとは、コンピューターにアンチウイルスソフトをインストールしていない状態を指す", "ブログであれば、他人の書いた文章を過度に引用しても問題はない", "誰もが情報発信者となれるのがインターネットであり、情報の真偽を保障してくれる機関や仕組みはない", "現在では、フィルタリングソフトによって、未成年者に有害な情報を完全にブロックできる"],
+        answer: 2,
+        explanation: "インターネットは中央管理者や情報の審議を100%保証する機関が存在しないため、利用者が自ら情報の真偽（ファクト）を見極めるリテラシーが求められます。"
+    },
+    {
+        id: "c6_q119", type: "exercise", chapter: 6,
+        text: "Webでのコミュニケーションに関する文章として正しいと考えられるのは、次のどれか。",
+        options: ["インターネットが普及する前は、リアルの場で打ち合わせや会話を重ねることで距離を近づけるしかなかったが、現在ではソーシャルメディアを通じて、互いの近況や趣味嗜好を知ることができ、実際に会わなくても精神的な距離を近づけることが可能である", "ブログやソーシャルメディアなどのCGM (Consumer-Generated Media、消費者生成メディア)によって、従来よりも圧倒的に多くの情報に触れられるようになったが、一般的に人気のないニッチな商品に関する情報を見つけたり、同じ趣味の人とつながることは難しい", "写真や動画の撮影機能やGPS機能と、パソコン並みの処理能力を備えたスマートフォンやタブレットが登場したが、高品質な写真や動画を即座にインターネット上に公開するには通信環境がまだ追いついていない", "EC事業者がクチコミやレビューといったユーザーの力を利用し、マスプロモーション手法では行き届かないニッチ商品の販促を行い、売り上げを高める取り組みは成立しないのが現状である"],
+        answer: 0,
+        explanation: "ソーシャルメディアの登場によって、空間的・時間的制約を超えて共通の関心事を持つ人々が相互にコミュニケーションを取り、信頼関係を深めることが可能になりました。"
+    },
+    {
+        id: "c6_q120", type: "exercise", chapter: 6,
+        text: "広告配信に関する以下の文章について、空欄(A) (B)に当てはまる言葉の正しい組み合わせは、次のどれか。\n「ユーザーのサイト訪問歴、年齢や性別、地域などの属性を元に配信する広告を変化させることを(A)という。特に、サイト訪問歴に基づく特定ユーザーへの広告配信を(B)という。」",
+        options: ["A: リマーケティング\nB: 行動ターゲティング", "A: ストリーミング\nB: リマーケティング", "A: 行動ターゲティング\nB: リマーケティング", "A: 行動ターゲティング\nB: ストリーミング"],
+        answer: 2,
+        explanation: "属性や行動に基づいて最適化することを「行動ターゲティング」、過去に自社サイトを訪れたユーザーに対して再度広告を配信することを「リマーケティング（リターゲティング）」と呼びます。"
+    }
+];
+
+// 前半・後半データを統合して120問の完全データを作成
+const quizData = [...quizDataPart1, ...quizDataPart2];
+
+// --- アプリケーションの状態 ---
+let currentQueue = [];
+let currentIndex = 0;
+let score = 0;
+let currentMode = ''; 
+
+// --- データの初期化（旧データとの互換性維持） ---
+let mistakes = JSON.parse(localStorage.getItem('webDirMistakes') || localStorage.getItem('webLitMistakes') || '{}');
+let stats = JSON.parse(localStorage.getItem('webDirStats') || localStorage.getItem('webLitStats') || '{}');
+let memos = JSON.parse(localStorage.getItem('webDirMemos') || localStorage.getItem('webLitMemos') || '{}');
+let bookmarks = JSON.parse(localStorage.getItem('webDirBookmarks') || localStorage.getItem('webLitBookmarks') || '{}'); 
+
+for (let id in mistakes) {
+    if (!stats[id]) {
+        stats[id] = { correct: 0, wrong: mistakes[id] };
+    }
+}
+
+// --- 初期化 ---
+function updateMenuState() {
+    const mistakeCount = Object.keys(mistakes).filter(id => mistakes[id] > 0).length;
+    const bookmarkCount = Object.keys(bookmarks).filter(id => bookmarks[id]).length;
+    
+    document.getElementById('mistake-count').textContent = mistakeCount;
+    document.getElementById('bookmark-count').textContent = bookmarkCount;
+    document.getElementById('btn-review').disabled = (mistakeCount === 0 && bookmarkCount === 0);
+}
+
+setTimeout(updateMenuState, 100);
+
+// --- 学習データのリセット ---
+function resetAllData() {
+    if (window.confirm("これまでの正解・間違いの記録、マーク、および入力したメモがすべて削除されます。\n本当によろしいですか？")) {
+        mistakes = {};
+        stats = {};
+        memos = {};
+        bookmarks = {};
+        localStorage.removeItem('webDirMistakes');
+        localStorage.removeItem('webDirStats');
+        localStorage.removeItem('webDirMemos');
+        localStorage.removeItem('webDirBookmarks');
+        localStorage.removeItem('webLitMistakes');
+        localStorage.removeItem('webLitStats');
+        localStorage.removeItem('webLitMemos');
+        localStorage.removeItem('webLitBookmarks');
+        updateMenuState();
+        alert("学習データとメモをすべてリセットしました。");
+    }
+}
+
+function getQuestionNumber(q) {
+    return quizData.findIndex(x => x.id === q.id) + 1;
+}
+
+function getQuestionLabel(q) {
+    const num = getQuestionNumber(q);
+    return `第${q.chapter}章 第${num}問`;
+}
+
+function returnToMenuFrom(event, viewId) {
+    if (event) event.preventDefault();
+    document.getElementById(viewId).classList.add('hidden');
+    document.getElementById('menu-view').classList.remove('hidden');
+    updateMenuState();
+}
+
+function hideAllViews() {
+    ['menu-view', 'quiz-view', 'result-view', 'list-view', 'analysis-view', 'review-list-view']
+        .forEach(id => document.getElementById(id).classList.add('hidden'));
+}
+
+// --- 苦手分析レポート画面 ---
+function showAnalysis() {
+    hideAllViews();
+    document.getElementById('analysis-view').classList.remove('hidden');
+    
+    const content = document.getElementById('analysis-content');
+    
+    let hasData = false;
+    for(let id in stats) {
+        if(stats[id].correct > 0 || stats[id].wrong > 0) {
+            hasData = true; break;
+        }
+    }
+    if(!hasData) {
+        content.innerHTML = '<p style="color: var(--text-muted); text-align: center; margin-top: 20px; font-weight: bold;">まだ学習データがありません。<br>問題を解くとここに分析結果が表示されます。</p>';
+        return;
+    }
+
+    let chapterStats = {};
+    let questionRank = [];
+
+    quizData.forEach(q => {
+        let key = `第${q.chapter}章`;
+        if (!chapterStats[key]) chapterStats[key] = { correct: 0, wrong: 0, total: 0 };
+        
+        if (stats[q.id]) {
+            chapterStats[key].correct += stats[q.id].correct;
+            chapterStats[key].wrong += stats[q.id].wrong;
+            chapterStats[key].total += (stats[q.id].correct + stats[q.id].wrong);
+
+            if (stats[q.id].wrong > 0) {
+                questionRank.push({
+                    id: q.id,
+                    label: getQuestionLabel(q),
+                    text: q.text,
+                    wrong: stats[q.id].wrong
+                });
+            }
+        }
+    });
+
+    let html = '<h3 style="margin-bottom:12px; font-size:1.05rem; color: var(--primary);">📈 章別の正答率</h3><div style="margin-bottom:24px;">';
+    for(let key in chapterStats) {
+        let s = chapterStats[key];
+        if(s.total === 0) continue;
+        let rate = Math.round((s.correct / s.total) * 100);
+        let barColor = rate >= 80 ? 'var(--correct)' : (rate < 60 ? 'var(--incorrect)' : 'var(--brand)');
+        
+        html += `
+            <div style="margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
+                    <span style="font-weight: 700;">${key}</span>
+                    <span><span style="font-weight:900; color:${barColor};">${rate}%</span> <span style="font-size:0.75rem; color:var(--text-muted);">(${s.correct}/${s.total})</span></span>
+                </div>
+                <div class="bar-wrap">
+                    <div class="bar-fill" style="width: ${rate}%; background: ${barColor};"></div>
+                </div>
+            </div>
+        `;
+    }
+    html += '</div>';
+
+    questionRank.sort((a,b) => b.wrong - a.wrong);
+    html += '<h3 style="margin-bottom:12px; font-size:1.05rem; color: var(--primary);">🚨 苦手な問題トップ5</h3>';
+    
+    if(questionRank.length === 0) {
+        html += '<p style="color: var(--correct); font-weight: bold; font-size:0.9rem;">現在、間違えた問題はありません！素晴らしいです。</p>';
+    } else {
+        let top5 = questionRank.slice(0, 5);
+        top5.forEach((q, i) => {
+            html += `
+                <div class="list-item" onclick="startSingleQuestion('${q.id}', 'analysis-view')">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-weight: 700; color: var(--incorrect); font-size:0.85rem;">第${i+1}位：${q.label}</span>
+                        <span class="badge-wrong">間違い: ${q.wrong}回</span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700;">${q.text}</div>
+                </div>
+            `;
+        });
+        html += '<p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; font-weight: 700;">※タップするとその問題の復習画面に遷移します。</p>';
+    }
+    content.innerHTML = html;
+}
+
+// --- 問題一覧画面 ---
+function showQuestionList() {
+    hideAllViews();
+    document.getElementById('list-view').classList.remove('hidden');
+    
+    const container = document.getElementById('question-list-container');
+    const navContainer = document.getElementById('list-nav-container');
+    container.innerHTML = '';
+    navContainer.innerHTML = '';
+
+    const grouped = {};
+    quizData.forEach(q => {
+        let key = `第${q.chapter}章`;
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(q);
+    });
+    
+    for (let key in grouped) {
+        const sectionId = `section-${key}`;
+
+        const navBtn = document.createElement('button');
+        navBtn.type = 'button';
+        navBtn.className = 'btn-list-nav';
+        navBtn.innerText = key;
+        navBtn.onclick = () => {
+            const el = document.getElementById(sectionId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        };
+        navContainer.appendChild(navBtn);
+
+        const sec = document.createElement('div');
+        sec.id = sectionId;
+        sec.innerHTML = `<h3 style="margin-top: 20px; margin-bottom: 12px; border-bottom: 2px solid var(--primary); padding-bottom: 4px; color: var(--primary); font-weight: 900; font-size:1.05rem;">${key}</h3>`;
+        
+        grouped[key].forEach((q) => {
+            const qStats = stats[q.id] || {correct: 0, wrong: 0};
+            const num = getQuestionNumber(q);
+            const hasMemo = memos[q.id] && memos[q.id].trim().length > 0;
+            const isBookmarked = bookmarks[q.id] ? `<span style="color:var(--star); margin-left: 4px;">★</span>` : '';
+            
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-item';
+            btn.onclick = () => startSingleQuestion(q.id, 'list-sequential');
+            
+            btn.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-weight: 900; color: var(--primary); font-size:0.85rem;">第${num}問 ${isBookmarked} ${hasMemo ? '📝' : ''}</span>
+                    <span style="font-size: 0.75rem; display: flex; gap: 4px;">
+                        <span class="badge-correct">正解: ${qStats.correct}回</span>
+                        <span class="badge-wrong">間違い: ${qStats.wrong}回</span>
+                    </span>
+                </div>
+                <div style="font-size: 0.9rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700;">
+                    ${q.text}
+                </div>
+            `;
+            sec.appendChild(btn);
+        });
+        container.appendChild(sec);
+    }
+}
+
+// --- 復習・マーク一覧画面 ---
+function showReviewList() {
+    hideAllViews();
+    document.getElementById('review-list-view').classList.remove('hidden');
+
+    const container = document.getElementById('review-list-container');
+    container.innerHTML = '';
+
+    const mistakeIds = Object.keys(mistakes).filter(id => mistakes[id] > 0);
+    const bookmarkIds = Object.keys(bookmarks).filter(id => bookmarks[id]);
+
+    if (mistakeIds.length === 0 && bookmarkIds.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); text-align:center; margin-top:20px; font-weight:bold; font-size:0.9rem;">間違えた問題やマークした問題はありません。</p>';
+        return;
+    }
+
+    if (mistakeIds.length > 0) {
+        const sec = document.createElement('div');
+        sec.innerHTML = `<h3 style="margin-bottom:12px; color:var(--incorrect); border-bottom: 2px solid var(--incorrect); padding-bottom: 4px; font-size:1.05rem;">🚨 間違えた問題</h3>`;
+        
+        const sortedMistakes = mistakeIds.sort((a, b) => mistakes[b] - mistakes[a]);
+        
+        sortedMistakes.forEach(id => {
+            const q = quizData.find(x => x.id === id);
+            if(!q) return;
+            sec.appendChild(createReviewListItem(q, true));
+        });
+        container.appendChild(sec);
+    }
+
+    if (bookmarkIds.length > 0) {
+        const sec = document.createElement('div');
+        sec.innerHTML = `<h3 style="margin-top:20px; margin-bottom:12px; color:var(--star); border-bottom: 2px solid var(--star); padding-bottom: 4px; font-size:1.05rem;">⭐ マークした問題</h3>`;
+        
+        bookmarkIds.forEach(id => {
+            const q = quizData.find(x => x.id === id);
+            if(!q) return;
+            sec.appendChild(createReviewListItem(q, false));
+        });
+        container.appendChild(sec);
+    }
+}
+
+function createReviewListItem(q, isMistake) {
+    const wrap = document.createElement('div');
+    wrap.className = 'review-item-container';
+
+    const qStats = stats[q.id] || {correct: 0, wrong: 0};
+    const num = getQuestionNumber(q);
+    const isBookmarked = bookmarks[q.id] ? `<span style="color:var(--star); margin-left:4px;">★</span>` : '';
+    const hasMemo = memos[q.id] && memos[q.id].trim().length > 0;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'list-item';
+    btn.onclick = () => startSingleQuestion(q.id, 'review-list-sequential');
+
+    btn.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-weight: 900; color: var(--primary); font-size:0.85rem;">第${num}問 ${isBookmarked} ${hasMemo ? '📝' : ''}</span>
+            <span style="font-size: 0.75rem;">
+                <span class="badge-wrong">間違い: ${qStats.wrong}回</span>
+            </span>
+        </div>
+        <div style="font-size: 0.9rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700;">
+            ${q.text}
+        </div>
+    `;
+    wrap.appendChild(btn);
+
+    if (isMistake) {
+        const resetBtn = document.createElement('button');
+        resetBtn.type = 'button';
+        resetBtn.className = 'btn-item-reset';
+        resetBtn.innerHTML = '<span>🗑️</span><span>リセット</span>';
+        resetBtn.onclick = () => resetMistakeData(q.id);
+        wrap.appendChild(resetBtn);
+    }
+
+    return wrap;
+}
+
+function resetMistakeData(id) {
+    if(window.confirm('この問題の間違い記録をリセットしますか？\n（正答/誤答データの間違い回数も0になります）')) {
+        delete mistakes[id];
+        if(stats[id]) stats[id].wrong = 0;
+        localStorage.setItem('webDirMistakes', JSON.stringify(mistakes));
+        localStorage.setItem('webDirStats', JSON.stringify(stats));
+        showReviewList(); 
+        updateMenuState();
+    }
+}
+
+function startSingleQuestion(questionId, fromMode) {
+    currentQueue = [...quizData];
+    currentIndex = currentQueue.findIndex(q => q.id === questionId);
+    startQuiz(fromMode);
+}
+
+function startChapterMode() {
+    const checks = document.querySelectorAll('.chap-check:checked');
+    if (checks.length === 0) {
+        alert('少なくとも1つの章を選択してください。');
+        return;
+    }
+    const selectedChaps = Array.from(checks).map(cb => parseInt(cb.value));
+    currentQueue = quizData.filter(q => selectedChaps.includes(q.chapter));
+    
+    if (currentQueue.length === 0) {
+        alert('選択された章の問題データがありません。');
+        return;
+    }
+    startQuiz('chapter');
+}
+
+function startQuiz(mode) {
+    currentMode = mode;
+    score = 0;
+    
+    if (mode === 'chapter') {
+        currentQueue = currentQueue.sort(() => Math.random() - 0.5);
+        currentIndex = 0;
+    }
+
+    hideAllViews();
+    document.getElementById('quiz-view').classList.remove('hidden');
+    
+    showQuestion();
+}
+
+function autoResizeMemo(element) {
+    if (!element) return;
+    element.style.height = 'auto';
+    element.style.height = element.scrollHeight + 'px';
+}
+
+function toggleBookmarkCurrent() {
+    const q = currentQueue[currentIndex];
+    if (bookmarks[q.id]) {
+        delete bookmarks[q.id];
+    } else {
+        bookmarks[q.id] = true;
+    }
+    localStorage.setItem('webDirBookmarks', JSON.stringify(bookmarks));
+    updateBookmarkStarUI();
+    updateMenuState();
+}
+
+function updateBookmarkStarUI() {
+    const q = currentQueue[currentIndex];
+    const btn = document.getElementById('btn-bookmark');
+    if (bookmarks[q.id]) {
+        btn.textContent = '★';
+        btn.classList.add('active');
+    } else {
+        btn.textContent = '☆';
+        btn.classList.remove('active');
+    }
+}
+
+function showQuestion() {
+    const q = currentQueue[currentIndex];
+    const qStats = stats[q.id] || { correct: 0, wrong: 0 };
+    
+    document.getElementById('chapter-qnum-text').textContent = getQuestionLabel(q);
+    document.getElementById('stats-badge-correct').textContent = `正解: ${qStats.correct}回`;
+    document.getElementById('stats-badge-wrong').textContent = `間違い: ${qStats.wrong}回`;
+
+    updateBookmarkStarUI(); 
+
+    const btnBackHeader = document.getElementById('btn-back-header');
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    const btnBackToList = document.getElementById('btn-back-to-list');
+    const progressText = document.getElementById('progress-text');
+
+    if (currentMode === 'list-sequential' || currentMode === 'review-list-sequential' || currentMode === 'analysis-view') {
+        progressText.classList.add('hidden');
+        btnPrev.classList.remove('hidden');
+        btnPrev.disabled = (currentIndex === 0);
+        btnNext.textContent = (currentIndex === currentQueue.length - 1) ? '結果を見る ➔' : '次の問題 ➔';
+        
+        btnBackToList.classList.remove('hidden');
+        btnBackToList.textContent = (currentMode === 'review-list-sequential') ? '📋 復習一覧に戻る' : '📋 一覧に戻る';
+        
+        btnBackHeader.setAttribute('onclick', 'returnToListDynamic(event)');
+        btnBackHeader.textContent = (currentMode === 'review-list-sequential') ? '← 復習一覧に戻る' : '← 一覧に戻る';
+    } else {
+        progressText.classList.remove('hidden');
+        progressText.textContent = `${currentIndex + 1} / ${currentQueue.length}`;
+        btnPrev.classList.add('hidden');
+        btnNext.textContent = '次の問題 ➔';
+        btnBackToList.classList.add('hidden');
+        
+        btnBackHeader.setAttribute('onclick', 'returnToMenuFromQuiz(event)');
+        btnBackHeader.textContent = '← 中断して戻る';
+    }
+
+    document.getElementById('question-text').innerText = q.text;
+    
+    /* 画像表示処理 */
+    const imgContainer = document.getElementById('question-image-container');
+    const imgElement = document.getElementById('question-image');
+    if (q.image) {
+        imgElement.src = q.image;
+        imgContainer.classList.remove('hidden');
+    } else {
+        imgElement.src = '';
+        imgContainer.classList.add('hidden');
+    }
+    
+    const optionsContainer = document.getElementById('options-container');
+    optionsContainer.innerHTML = '';
+    
+    let optionsWithIndex = q.options.map((optText, index) => ({
+        text: optText,
+        originalIndex: index
+    }));
+    
+    optionsWithIndex.sort(() => Math.random() - 0.5); 
+    
+    optionsWithIndex.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-option';
+        btn.innerText = opt.text;
+        btn.dataset.originalIndex = opt.originalIndex;
+        btn.onclick = () => handleAnswer(opt.originalIndex);
+        optionsContainer.appendChild(btn);
+    });
+
+    document.getElementById('feedback-container').classList.add('hidden');
+    
+    const memoTextarea = document.getElementById('memo-textarea');
+    memoTextarea.value = memos[q.id] || '';
+    document.getElementById('memo-status').style.display = 'none';
+    autoResizeMemo(memoTextarea);
+}
+
+function handleAnswer(selectedOriginalIndex) {
+    const q = currentQueue[currentIndex];
+    const isCorrect = (selectedOriginalIndex === q.answer);
+    
+    const buttons = document.querySelectorAll('.btn-option');
+    buttons.forEach((btn) => {
+        btn.disabled = true;
+        const btnOriginalIndex = parseInt(btn.dataset.originalIndex, 10);
+        
+        if (btnOriginalIndex === q.answer) {
+            btn.style.backgroundColor = '#ECFDF5'; 
+            btn.style.borderColor = 'var(--correct)';
+            btn.style.fontWeight = 'bold';
+        } else if (btnOriginalIndex === selectedOriginalIndex && !isCorrect) {
+            btn.style.backgroundColor = '#FEF2F2'; 
+            btn.style.borderColor = 'var(--incorrect)';
+            btn.style.fontWeight = 'bold';
+        }
+    });
+
+    if (!stats[q.id]) stats[q.id] = { correct: 0, wrong: 0 };
+
+    const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackContainer = document.getElementById('feedback-container');
+    
+    if (isCorrect) {
+        score++;
+        stats[q.id].correct++;
+        feedbackTitle.textContent = '⭕ 正解！';
+        feedbackContainer.className = 'feedback correct';
+    } else {
+        stats[q.id].wrong++;
+        mistakes[q.id] = (mistakes[q.id] || 0) + 1;
+        feedbackTitle.textContent = '❌ 不正解...';
+        feedbackContainer.className = 'feedback incorrect';
+    }
+
+    localStorage.setItem('webDirStats', JSON.stringify(stats));
+    localStorage.setItem('webDirMistakes', JSON.stringify(mistakes));
+    
+    document.getElementById('stats-badge-correct').textContent = `正解: ${stats[q.id].correct}回`;
+    document.getElementById('stats-badge-wrong').textContent = `間違い: ${stats[q.id].wrong}回`;
+
+    document.getElementById('correct-answer-text').innerText = q.options[q.answer];
+    document.getElementById('explanation-text').innerText = q.explanation;
+    feedbackContainer.classList.remove('hidden');
+
+    autoResizeMemo(document.getElementById('memo-textarea'));
+    updateMenuState(); 
+}
+
+let memoTimeout;
+function saveMemo() {
+    const q = currentQueue[currentIndex];
+    const memoTextarea = document.getElementById('memo-textarea');
+    const memoText = memoTextarea.value;
+    
+    autoResizeMemo(memoTextarea);
+
+    memos[q.id] = memoText;
+    localStorage.setItem('webDirMemos', JSON.stringify(memos));
+    
+    const status = document.getElementById('memo-status');
+    status.style.display = 'inline-block';
+    
+    clearTimeout(memoTimeout);
+    memoTimeout = setTimeout(() => {
+        status.style.display = 'none';
+    }, 1500);
+}
+
+function prevQuestion() {
+    if (currentIndex > 0) {
+        currentIndex--;
+        showQuestion();
+    }
+}
+
+function nextQuestion() {
+    currentIndex++;
+    if (currentIndex < currentQueue.length) {
+        showQuestion();
+    } else {
+        showResult();
+    }
+}
+
+function returnToListDynamic(event) {
+    if (event) event.preventDefault();
+    document.getElementById('quiz-view').classList.add('hidden');
+    
+    if (currentMode === 'review-list-sequential') {
+        showReviewList();
+    } else if (currentMode === 'analysis-view') {
+        showAnalysis();
+    } else {
+        showQuestionList();
+    }
+}
+
+function returnToMenuFromQuiz(event) {
+    if (event) event.preventDefault();
+    if (window.confirm("学習を中断してトップメニューに戻りますか？")) {
+        document.getElementById('quiz-view').classList.add('hidden');
+        document.getElementById('menu-view').classList.remove('hidden');
+        updateMenuState();
+    }
+}
+
+function showResult() {
+    hideAllViews();
+    const resultView = document.getElementById('result-view');
+    resultView.classList.remove('hidden');
+    
+    const percentage = Math.round((score / currentQueue.length) * 100);
+    document.getElementById('score-display').textContent = `${score} / ${currentQueue.length} 問正解`;
+    
+    let msg = '';
+    if (percentage === 100) msg = 'パーフェクト！素晴らしい理解度です。';
+    else if (percentage >= 80) msg = '合格ラインです！この調子で頑張りましょう。';
+    else msg = '復習・マーク一覧を活用して、苦手な問題を克服しましょう。';
+    
+    document.getElementById('result-message').textContent = msg;
+    
+    updateMenuState();
+}
+</script>
+</body>
+</html>
